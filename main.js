@@ -1,19 +1,35 @@
-var _rocks 			= 0;
 var _autoRocks  	= 0;
-
-
-var _woods		= 0;
-var _food		= 0;
 
 var	_autoGeneration = 0;
 var _population = 1;
 var _cairnUpgrade = 0;
 var MAX_CAIRN_UPGRADE = 10;
 
+/// PLAYER BASE
+// Resources, Production
+class PlayerBase {
 
+	constructor()
+	{
+		this.rocks = 0;
+		this.population = 0;
 
+		this.rock_production = 0;
+	}
 
-// PLAYER
+	addRocks(number)
+	{
+		this.rocks += number;
+	}
+
+	produce()
+	{
+		this.addRocks(this.rock_production);
+	}
+}
+
+/// PLAYER
+// Unlockables, Levels, Actions
 class Player {
 
 	// _level = 0;
@@ -23,10 +39,8 @@ class Player {
 	{ 
 		this._level 			= 0; 
 		this.LEVELS_ROCKS_REQ 	= [5, 10, 1000];
-		this._total_rocks 		= 0;
-		
-		//initializeUnlockables();
-		this._b_cairn_unlocked = false;
+		this.base = new PlayerBase();
+		this.initializeUnlockables();
 
 	}
 	
@@ -40,11 +54,6 @@ class Player {
 	get level() 
 	{
 		return this._level;
-	}
-	
-	updateTotalRocks(number)
-	{
-		this._total_rocks += number;
 	}
 	
 	
@@ -67,12 +76,14 @@ class Player {
 
 	update()
 	{
+		this.base.produce();
 		this.updateLevel();
+		this.refreshView();
 	}
 	
 	updateLevel()
 	{
-		if (this._total_rocks > this.LEVELS_ROCKS_REQ[ this.level ] )
+		if (this.base.rocks > this.LEVELS_ROCKS_REQ[ this.level ] )
 		{
 			this._level++;
 			this.unlock_feature(this._level);
@@ -80,11 +91,15 @@ class Player {
 		return;
 	}
 	
-
+	refreshView()
+	{
+		document.getElementById("cost_cairn").innerHTML = cairnUpgradeCost();
+		document.getElementById("rocks_label").innerHTML = this.base.rocks;
+		document.getElementById("cairnUpgrade_label").innerHTML = _cairnUpgrade;
+		document.getElementById("autoRocks_label").innerHTML = this.base.rock_production;
+	}
 	
 }// !Player
-
-
 
 
 function load_features(player)
@@ -97,32 +112,45 @@ function load_features(player)
 
 
 // -------------------------------------------
-
-// ROCKS
+/// UI BUTTONS
 function  addRock(number)
 {
-	_rocks += number;
-	document.getElementById("rocks_label").innerHTML = _rocks;
-	__player.updateTotalRocks(number);
-
+	__player.base.addRocks(number);
 }
 
 function  buyAutoRock(number)
 {
-	_autoRocks += number;
+	upgrade_cost = rockProductionUpgradeCost();
+	if ( __player.base.rocks > upgrade_cost )
+	{
+		__player.base.rock_production += number;
+		__player.base.rocks -= upgrade_cost;
+	}
 	document.getElementById("autoRocks_label").innerHTML = _autoRocks;
 }
-// -------------------------------------------
 
 // CAIRN
 function buyCairnUpgrade(number)
 {
-	if ( cairnUpgradeCost() && _cairnUpgrade)
+	cairn_cost = cairnUpgradeCost();
+	if ( (__player.base.rocks > cairn_cost) && __player._b_cairn_unlocked)
+	{
 		_cairnUpgrade += 1;
+		__player.base.addRocks( (-1) * cairn_cost );
+	}
+
 }
+
+// -------------------------------------------
+/// COSTS
 function cairnUpgradeCost()
 {
 	return Math.floor(10 * Math.pow(1.1, _cairnUpgrade)); 
+}
+
+function rockProductionUpgradeCost()
+{
+	return Math.floor(10 * Math.pow(2.5, __player.base.rock_production)); 
 }
 // -------------------------------------------
 
@@ -130,11 +158,11 @@ function cairnUpgradeCost()
 var timer_freq 			= 1000 ; // 1 sec
 var time_update_player 	= 100; //0.1sec
 var __player = new Player();
-
+/*
 window.setInterval( function(){
-	addRock(_autoRocks )
+	refreshView()
 }, timer_freq ); // 1 sec/tick
-
+*/
 window.setInterval( function(){
 	__player.update();
 }, time_update_player);
