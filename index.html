@@ -15,7 +15,6 @@
 <body>
 
 	<button onClick="addRock(1)"> Oh!!! That's a rock! </button>
-	<button onClick="buyAutoRock(1)"> Automation ! </button>
 	
 	<p>ME have  <span style="color:blue" id="rocks_label">0</span> rock.</p>
 	
@@ -28,7 +27,8 @@
 	
 	<!-- UPGRADES  -->
 	<button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button>
-	
+	<button onClick="buyAutoRock(1)" style="display:none" id="rock_prod_upgrade_btn"> Increase auto rock production for <span style="color:blue" id="cost_rock_production"> 0 </span> rocks </button>
+
 	<script type="text/javascript" src="main.js"></script>
 	
 	</body>

@@ -3,7 +3,6 @@ var _autoRocks  	= 0;
 var	_autoGeneration = 0;
 var _population = 1;
 var _cairnUpgrade = 0;
-var MAX_CAIRN_UPGRADE = 10;
 
 /// PLAYER BASE
 // Resources, Production
@@ -12,21 +11,58 @@ class PlayerBase {
 	constructor()
 	{
 		this.rocks = 0;
+		this.cairns = 0;
 		this.population = 0;
 
 		this.rock_production = 0;
+		this.available_housing = 0;
+
+		this.attractivity = 0; // can be negative and lose population ?
 	}
 
+	// MUTATORS
 	addRocks(number)
-	{
-		this.rocks += number;
-	}
+	{ this.rocks += number; }
+	addCairns(number)
+	{ this.cairns += number; }
 
+	// FUNCS
 	produce()
 	{
 		this.addRocks(this.rock_production);
 	}
-}
+
+	update()
+	{
+		this.updateAttractivity();
+		this.updatePopulation();
+	}
+
+	updateAttractivity()
+	{
+		// Cairns helps ppl find a way to village
+		this.attractivity = this.cairns;
+
+		// Not enough housing ? Less attractive..
+		var housing_pop_delta = this.available_housing - this.population;
+		this.attractivity += ( housing_pop_delta > 0 ) ? housing_pop_delta : (-1) * housing_pop_delta;
+
+	}
+
+	updatePopulation()
+	{
+		if ( this.attractivity > 0 ) // Base required
+		{
+			if ( Math.random() - this.cairns /* [0, 1] */ > 0 )
+			this.population++;
+		} else if ( this.attractivity == 0 ) {
+			return;
+		} else { // Negative val
+			this.population--;
+		}
+	}
+
+} //! Base
 
 /// PLAYER
 // Unlockables, Levels, Actions
@@ -38,7 +74,7 @@ class Player {
 	constructor() 
 	{ 
 		this._level 			= 0; 
-		this.LEVELS_ROCKS_REQ 	= [5, 10, 1000];
+		this.LEVELS_ROCKS_REQ 	= [10, 20, 1000];
 		this.base = new PlayerBase();
 		this.initializeUnlockables();
 
@@ -48,6 +84,7 @@ class Player {
 	initializeUnlockables()
 	{
 		this._b_cairn_unlocked = false;
+		this._b_rock_prod_unlocked = false;
 	}
 	
 	// MUTATORS
@@ -67,6 +104,9 @@ class Player {
 				document.getElementById("cairn_upgrade_button").style.display = 'block';
 				break;
 			case 2:
+				this._b_rock_prod_unlocked = true;
+				document.getElementById("rock_prod_upgrade_btn").style.display = 'block';
+				break;
 			case 3:
 			default:
 				break;
@@ -77,13 +117,17 @@ class Player {
 	update()
 	{
 		this.base.produce();
+		this.base.updateAttractivity();
+
 		this.updateLevel();
+
+
 		this.refreshView();
 	}
 	
 	updateLevel()
 	{
-		if (this.base.rocks > this.LEVELS_ROCKS_REQ[ this.level ] )
+		if (this.base.rocks >= this.LEVELS_ROCKS_REQ[ this.level ] )
 		{
 			this._level++;
 			this.unlock_feature(this._level);
@@ -95,8 +139,9 @@ class Player {
 	{
 		document.getElementById("cost_cairn").innerHTML = cairnUpgradeCost();
 		document.getElementById("rocks_label").innerHTML = this.base.rocks;
-		document.getElementById("cairnUpgrade_label").innerHTML = _cairnUpgrade;
+		document.getElementById("cairnUpgrade_label").innerHTML = this.base.cairns;
 		document.getElementById("autoRocks_label").innerHTML = this.base.rock_production;
+		document.getElementById("cost_rock_production").innerHTML = rockProductionUpgradeCost();
 	}
 	
 }// !Player
@@ -121,7 +166,7 @@ function  addRock(number)
 function  buyAutoRock(number)
 {
 	upgrade_cost = rockProductionUpgradeCost();
-	if ( __player.base.rocks > upgrade_cost )
+	if ( __player.base.rocks >= upgrade_cost )
 	{
 		__player.base.rock_production += number;
 		__player.base.rocks -= upgrade_cost;
@@ -133,9 +178,9 @@ function  buyAutoRock(number)
 function buyCairnUpgrade(number)
 {
 	cairn_cost = cairnUpgradeCost();
-	if ( (__player.base.rocks > cairn_cost) && __player._b_cairn_unlocked)
+	if ( (__player.base.rocks >= cairn_cost) && __player._b_cairn_unlocked)
 	{
-		_cairnUpgrade += 1;
+		__player.base.addCairns(number);
 		__player.base.addRocks( (-1) * cairn_cost );
 	}
 
