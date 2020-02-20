@@ -1,8 +1,14 @@
 var _autoRocks  	= 0;
 
-var	_autoGeneration = 0;
-var _population = 1;
-var _cairnUpgrade = 0;
+// CONSTS
+const states = { CONSUME: 'consume' , GAIN: 'gain' }
+const resources = {}
+
+// RESOURCE BUNDLE
+class RES_BUNDLE
+{
+
+}
 
 /// PLAYER BASE
 // Resources, Production
@@ -13,8 +19,10 @@ class PlayerBase {
 		this.rocks = 0;
 		this.cairns = 0;
 		this.population = 0;
+		this.food = 0;
 
 		this.rock_production = 0;
+		this.food_production = 0;
 		this.available_housing = 0;
 
 		this.attractivity = 0; // can be negative and lose population ?
@@ -45,7 +53,12 @@ class PlayerBase {
 
 		// Not enough housing ? Less attractive..
 		var housing_pop_delta = this.available_housing - this.population;
-		this.attractivity += ( housing_pop_delta > 0 ) ? housing_pop_delta : (-1) * housing_pop_delta;
+		this.attractivity += ( housing_pop_delta > 0 ) ? (-1) * housing_pop_delta : housing_pop_delta;
+
+	}
+
+	updateRockProduction()
+	{
 
 	}
 
@@ -53,12 +66,13 @@ class PlayerBase {
 	{
 		if ( this.attractivity > 0 ) // Base required
 		{
-			if ( Math.random() - this.cairns /* [0, 1] */ > 0 )
+			if ( Math.random() - 1/this.cairns /* [0, 1] */ > 0 )
 			this.population++;
 		} else if ( this.attractivity == 0 ) {
 			return;
 		} else { // Negative val
-			this.population--;
+			if (this.population>0)
+				this.population--;
 		}
 	}
 
@@ -74,7 +88,7 @@ class Player {
 	constructor() 
 	{ 
 		this._level 			= 0; 
-		this.LEVELS_ROCKS_REQ 	= [10, 20, 1000];
+		this.LEVELS_ROCKS_REQ 	= [10, 20, 30];
 		this.base = new PlayerBase();
 		this.initializeUnlockables();
 
@@ -85,6 +99,7 @@ class Player {
 	{
 		this._b_cairn_unlocked = false;
 		this._b_rock_prod_unlocked = false;
+		this._b_buy_housing_unlocked = false;
 	}
 	
 	// MUTATORS
@@ -108,6 +123,9 @@ class Player {
 				document.getElementById("rock_prod_upgrade_btn").style.display = 'block';
 				break;
 			case 3:
+				this._b_buy_housing_unlocked = true;
+				document.getElementById("buy_housing_upgrade_btn").style.display = 'block';
+				break;
 			default:
 				break;
 		}
@@ -117,7 +135,7 @@ class Player {
 	update()
 	{
 		this.base.produce();
-		this.base.updateAttractivity();
+		this.base.update();
 
 		this.updateLevel();
 
@@ -138,10 +156,16 @@ class Player {
 	refreshView()
 	{
 		document.getElementById("cost_cairn").innerHTML = cairnUpgradeCost();
-		document.getElementById("rocks_label").innerHTML = this.base.rocks;
+		document.getElementById("rocks_label").innerHTML = this.base.rocks.toFixed(2);
 		document.getElementById("cairnUpgrade_label").innerHTML = this.base.cairns;
-		document.getElementById("autoRocks_label").innerHTML = this.base.rock_production;
+		document.getElementById("autoRocks_label").innerHTML = this.base.rock_production.toFixed(2);
 		document.getElementById("cost_rock_production").innerHTML = rockProductionUpgradeCost();
+		document.getElementById("attractivity_label").innerHTML = this.base.attractivity;
+		document.getElementById("population_label").innerHTML = this.base.population;
+		document.getElementById("player_level_label").innerHTML = this.level;
+		document.getElementById("cost_buy_housing").innerHTML = housingUpgradeCost();
+		document.getElementById("housing_available_label").innerHTML = this.base.available_housing;
+
 	}
 	
 }// !Player
@@ -171,17 +195,29 @@ function  buyAutoRock(number)
 		__player.base.rock_production += number;
 		__player.base.rocks -= upgrade_cost;
 	}
-	document.getElementById("autoRocks_label").innerHTML = _autoRocks;
+	//document.getElementById("autoRocks_label").innerHTML = _autoRocks;
 }
 
 // CAIRN
 function buyCairnUpgrade(number)
 {
-	cairn_cost = cairnUpgradeCost();
-	if ( (__player.base.rocks >= cairn_cost) && __player._b_cairn_unlocked)
+	upgrade_cost = cairnUpgradeCost();
+	if ( (__player.base.rocks >= upgrade_cost) && __player._b_buy_housing_unlocked)
 	{
 		__player.base.addCairns(number);
-		__player.base.addRocks( (-1) * cairn_cost );
+		__player.base.addRocks( (-1) * upgrade_cost );
+	}
+
+}
+
+// HOUSING
+function buyHousing(number)
+{
+	upgrade_cost = housingUpgradeCost();
+	if ( (__player.base.rocks >= upgrade_cost) && __player._b_cairn_unlocked)
+	{
+		__player.base.available_housing += number;
+		__player.base.rocks -= upgrade_cost;
 	}
 
 }
@@ -190,12 +226,17 @@ function buyCairnUpgrade(number)
 /// COSTS
 function cairnUpgradeCost()
 {
-	return Math.floor(10 * Math.pow(1.1, _cairnUpgrade)); 
+	return Math.floor(10 * Math.pow(1.5, __player.base.cairns)); 
 }
 
 function rockProductionUpgradeCost()
 {
 	return Math.floor(10 * Math.pow(2.5, __player.base.rock_production)); 
+}
+
+function housingUpgradeCost()
+{
+	return Math.floor(10 * Math.pow(5.5, __player.base.available_housing)); 
 }
 // -------------------------------------------
 

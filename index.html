@@ -16,18 +16,24 @@
 
 	<button onClick="addRock(1)"> Oh!!! That's a rock! </button>
 	
-	<p>ME have  <span style="color:blue" id="rocks_label">0</span> rock.</p>
+	<p> <b>PLAYER</b></p>
+	<p>ME have level <span style="color:blue" id="player_level_label">0</span></p>
+
+
 	
-	<p>ME have  <span style="color:blue" id="population_label">0</span> population.</p>
-	
-	
-	<p>ME have  <span style="color:blue" id="autoRocks_label">0</span> rock production.</p>
-	
-	<p>ME have level <span style="color:blue" id="cairnUpgrade_label">0</span> Cairn .</p>
-	
-	<!-- UPGRADES  -->
+	<p> <b>PLAYER BASE </b></p>
+	<p> # rocks :  <span style="color:blue" id="rocks_label">0</span> </p>
+	<p> # cairns : <span style="color:blue" id="cairnUpgrade_label">0</span></p>
+	<p> # population :  <span style="color:blue" id="population_label">0</span></p>
+	<p> # housing_available : <span style="color:blue" id="housing_available_label">0</span></p>
+	<p> # attractivity : <span style="color:blue" id="attractivity_label">0</span></p>
+
+	<p> >> ROCK PRODUCTION  <span style="color:blue" id="autoRocks_label">0</span></p>
+	<!-- BASE UPGRADES  -->
+	<p> <i> -- base upgrades -- </i></p>
 	<button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button>
-	<button onClick="buyAutoRock(1)" style="display:none" id="rock_prod_upgrade_btn"> Increase auto rock production for <span style="color:blue" id="cost_rock_production"> 0 </span> rocks </button>
+	<button onClick="buyAutoRock(0.1)" style="display:none" id="rock_prod_upgrade_btn"> Increase auto rock production for <span style="color:blue" id="cost_rock_production"> 0 </span> rocks </button>
+	<button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Buy housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button>
 
 	<script type="text/javascript" src="main.js"></script>
 	
