@@ -1,4 +1,5 @@
-var _autoRocks  	= 0;
+// DEBUG
+var DEBUG = true;
 
 // CONSTS
 const states = { CONSUME: 'consume' , GAIN: 'gain' }
@@ -48,17 +49,14 @@ class PlayerBase {
 
 	updateAttractivity()
 	{
+		this.attractivity = 0;
+
 		// Cairns helps ppl find a way to village
-		this.attractivity = this.cairns;
+		this.attractivity += this.cairns;
 
 		// Not enough housing ? Less attractive..
-		var housing_pop_delta = this.available_housing - this.population;
-		this.attractivity += ( housing_pop_delta > 0 ) ? (-1) * housing_pop_delta : housing_pop_delta;
-
-	}
-
-	updateRockProduction()
-	{
+		var overpopulation = this.population -this.available_housing;
+		this.attractivity -= ( overpopulation > 0 ) ? overpopulation : 0;
 
 	}
 
@@ -92,8 +90,14 @@ class Player {
 		this.base = new PlayerBase();
 		this.initializeUnlockables();
 
+		if (DEBUG)
+			this.godMode();
 	}
-	
+
+	godMode()
+	{
+		this.base.rocks = 999999999;
+	}
 	// Unlockable upgrades
 	initializeUnlockables()
 	{
@@ -195,14 +199,13 @@ function  buyAutoRock(number)
 		__player.base.rock_production += number;
 		__player.base.rocks -= upgrade_cost;
 	}
-	//document.getElementById("autoRocks_label").innerHTML = _autoRocks;
 }
 
 // CAIRN
 function buyCairnUpgrade(number)
 {
 	upgrade_cost = cairnUpgradeCost();
-	if ( (__player.base.rocks >= upgrade_cost) && __player._b_buy_housing_unlocked)
+	if ( (__player.base.rocks >= upgrade_cost) && __player._b_cairn_unlocked)
 	{
 		__player.base.addCairns(number);
 		__player.base.addRocks( (-1) * upgrade_cost );
@@ -214,7 +217,7 @@ function buyCairnUpgrade(number)
 function buyHousing(number)
 {
 	upgrade_cost = housingUpgradeCost();
-	if ( (__player.base.rocks >= upgrade_cost) && __player._b_cairn_unlocked)
+	if ( (__player.base.rocks >= upgrade_cost) && __player._b_buy_housing_unlocked)
 	{
 		__player.base.available_housing += number;
 		__player.base.rocks -= upgrade_cost;
