@@ -24,21 +24,44 @@
 	<p> <b>PLAYER BASE </b></p>
 	<p> # rocks :  <span style="color:blue" id="rocks_label">0</span> </p>
 	<p> # cairns : <span style="color:blue" id="cairnUpgrade_label">0</span></p>
+	<p> # food : <span style="color:blue" id="food_label">0</span></p>
 	<p> # population :  <span style="color:blue" id="population_label">0</span></p>
 	<p> # housing_available : <span style="color:blue" id="housing_available_label">0</span></p>
 	<p> # attractivity : <span style="color:blue" id="attractivity_label">0</span></p>
 
 	<p> >> ROCK PRODUCTION  <span style="color:blue" id="autoRocks_label">0</span></p>
+	<p> >> FOOD PRODUCTION  <span style="color:blue" id="foodProduction_label">0</span></p>
 	<!-- BASE UPGRADES  -->
 	<p> <i> -- base upgrades -- </i></p>
 	<button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button>
-	<button onClick="buyAutoRock(0.1)" style="display:none" id="rock_prod_upgrade_btn"> Increase auto rock production for <span style="color:blue" id="cost_rock_production"> 0 </span> rocks </button>
 	<button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Buy housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button>
 
-	<script type="text/javascript" src="main.js"></script>
+	<!-- <script type="text/javascript" src="main.js"></script> -->
+	<script type="text/javascript" src="main.js">
 
-	<p> <b>Miners : </b> <span style="color:brown" id="miners_pop_label"> ☻☻☻ </span></p>
-	<p> <b>Farmers : </b> <span style="color:yellowgreen" id="farmers_pop_label"> ☻☻☻ </span></p>
+
+	</script>
+
+	<!-- <script type="text/typescript" src="stats.ts"></script> -->
+
+	<!-- JOBS -->
+	<table>
+		<!-- MINE --> 
+		<tr>
+			<th><b>MINE : </b></th>
+			<th><button onClick="assignToMine(1)" style="display:none" id="assign_to_mine_btn"> Assign <span style="color:purple" id="n_pop_assign_mine">1</span> slave </button></th>
+			<th><button onClick="deassignFromMine(1)" style="display:none" id="deassign_from_mine_btn"> De-assign <span style="color:purple" id="n_pop_deassign_mine">1</span> slave  </button></th>
+		</tr>
+		<!-- FARM --> 
+		<tr>
+				<th><b>FARM : </b></th>
+				<th><button onClick="assignToFarm(1)" style="display:none" id="assign_to_farm_btn"> Assign <span style="color:purple" id="n_pop_assign_farm">1</span> slave  </button></th>
+				<th><button onClick="deassignFromFarm(1)" style="display:none" id="deassign_from_farm_btn"> De-assign <span style="color:purple" id="n_pop_deassign_farm">1</span> slave </button></th>
+		</tr>
+	</table>
+	<p> <b>Idle : </b> <span style="color:black" id="idle_pop_label"></span></p>
+	<p> <b>Miners : </b> <span style="color:brown" id="miners_pop_label"></span></p>
+	<p> <b>Farmers : </b> <span style="color:rgb(99, 205, 50)" id="farmers_pop_label"></span></p>
 
 	</body>
 </html>
