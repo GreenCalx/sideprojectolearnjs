@@ -8,7 +8,7 @@ const GAME_STATS = {
 };
 
 // DEBUG
-var DEBUG = false;
+var DEBUG = true;
 
 // CONSTS
 const STATES = { CONSUME : 'consume' , GAIN:'gain' }
@@ -41,7 +41,8 @@ class PlayerBase {
 		this.rocks = 0;
 		this.cairns = 0;
 		this.population = 0;
-		this.food = 0;
+		this.food = 30 ;
+		this.souls = 0;
 
 		this.rock_production = 0;
 		this.food_production = 0;
@@ -156,10 +157,14 @@ class PlayerBase {
 
 	losePopulation(number)
 	{
+		if (this.population<=0)
+			return;
+
 		this.population--;
 		if (this.idle_pop > 0)
 		{
 			this.idle_pop--;
+			__player.base.refreshPopulationView();
 			return;
 		}
 
@@ -169,15 +174,28 @@ class PlayerBase {
 		{
 			total_probability += JOB_LOSS[key];
 			if ( job_to_remove <= total_probability )
+			{
 				switch(key)
 				{
-					case JOB_LOSS.MINE:
-						this.miner_pop--;
-					case JOB_LOSS.FARM:
-						this.farmer_pop--;
+					case "MINE":
+						if (this.miner_pop>0)
+							this.miner_pop--;
+						else if ( this.farmer_pop>0)
+							this.farmer_pop--
+						break;
+					case "FARM":
+						if (this.farmer_pop>0)
+							this.farmer_pop--;
+						else if (this.miner_pop>0)
+							this.miner_pop--;
+						break;
+					default:
+						break;
 				}
-
+				break;
+			}
 		}
+		__player.base.refreshPopulationView();
 	}
 
 		refreshPopulationView()
@@ -238,6 +256,7 @@ class Player {
 	{
 		this._b_cairn_unlocked = false;
 		this._b_buy_housing_unlocked = false;
+		this._b_sacrifice_unlocked = false;
 	}
 	
 	// MUTATORS
@@ -265,8 +284,10 @@ class Player {
 				document.getElementById("deassign_from_farm_btn").style.display = 'block';
 				break;
 			case 3:
-				this._b_buy_housing_unlocked = true;
-				
+				this._b_sacrifice_unlocked = true;
+				//document.getElementById("souls_label").style.display = 'block';
+				document.getElementById("buy_sacrifice_upgrade_btn").style.display = 'block';
+
 				break;
 			default:
 				break;
@@ -301,13 +322,15 @@ class Player {
 		document.getElementById("rocks_label").innerHTML = this.base.rocks.toFixed(2);
 		document.getElementById("cairnUpgrade_label").innerHTML = this.base.cairns;
 		document.getElementById("autoRocks_label").innerHTML = this.base.rock_production.toFixed(2);
-		document.getElementById("attractivity_label").innerHTML = this.base.attractivity.toFixed(2);;
+		document.getElementById("attractivity_label").innerHTML = this.base.attractivity.toFixed(2);
 		document.getElementById("population_label").innerHTML = this.base.population;
 		document.getElementById("player_level_label").innerHTML = this.level;
-		document.getElementById("cost_buy_housing").innerHTML = housingUpgradeCost().toFixed(2);;
-		document.getElementById("housing_available_label").innerHTML = this.base.available_housing.toFixed(2);;
-		document.getElementById("food_label").innerHTML= this.base.food.toFixed(2);;
-		document.getElementById("foodProduction_label").innerHTML= this.base.food_production.toFixed(2);;
+		document.getElementById("cost_buy_housing").innerHTML = housingUpgradeCost().toFixed(2);
+		document.getElementById("housing_available_label").innerHTML = this.base.available_housing.toFixed(2);
+		document.getElementById("food_label").innerHTML= this.base.food.toFixed(2);
+		document.getElementById("foodProduction_label").innerHTML= this.base.food_production.toFixed(2);
+		document.getElementById("souls_label_cpt").innerHTML= this.base.souls.toFixed(2);
+		document.getElementById("cost_sacrifice").innerHTML= 1;
 
 	}
 
@@ -394,6 +417,16 @@ function deassignFromMine(number)
 		__player.base.miner_pop--
 		__player.base.idle_pop++;
 		__player.base.refreshPopulationView();
+	}
+}
+
+//SACRIFICE
+function sacrificeSlave(number)
+{
+	if ( __player.base.population > 0)
+	{
+		__player.base.losePopulation(1);
+		__player.base.souls+=number;
 	}
 }
 

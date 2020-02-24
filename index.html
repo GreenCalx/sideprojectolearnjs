@@ -13,13 +13,13 @@
 </head>
 
 <body>
+	<script type="text/javascript" src="main.js">
+	</script>
 
 	<button onClick="addRock(1)"> Oh!!! That's a rock! </button>
 	
 	<p> <b>PLAYER</b></p>
-	<p>ME have level <span style="color:blue" id="player_level_label">0</span></p>
-
-
+	<p> LEVEL <span style="color:blue" id="player_level_label">0</span></p>
 	
 	<p> <b>PLAYER BASE </b></p>
 	<p> # rocks :  <span style="color:blue" id="rocks_label">0</span> </p>
@@ -28,19 +28,17 @@
 	<p> # population :  <span style="color:blue" id="population_label">0</span></p>
 	<p> # housing_available : <span style="color:blue" id="housing_available_label">0</span></p>
 	<p> # attractivity : <span style="color:blue" id="attractivity_label">0</span></p>
-
+	<p> # souls : <span style="color:blueviolet" id="souls_label_cpt">0</span></p>
 	<p> >> ROCK PRODUCTION  <span style="color:blue" id="autoRocks_label">0</span></p>
 	<p> >> FOOD PRODUCTION  <span style="color:blue" id="foodProduction_label">0</span></p>
 	<!-- BASE UPGRADES  -->
 	<p> <i> -- base upgrades -- </i></p>
 	<button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button>
 	<button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Buy housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button>
+	
+	
+	<button onClick="sacrificeSlave(1)" style="display:none" id="buy_sacrifice_upgrade_btn"> Sacrifice <span style="color:blue" id="cost_sacrifice"> 0 </span> slave </button>
 
-	<!-- <script type="text/javascript" src="main.js"></script> -->
-	<script type="text/javascript" src="main.js">
-
-
-	</script>
 
 	<!-- <script type="text/typescript" src="stats.ts"></script> -->
 
