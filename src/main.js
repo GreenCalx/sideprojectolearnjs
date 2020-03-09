@@ -27,6 +27,18 @@ class RES_BUNDLE
 
 }
 
+/// CHAMPION
+class Champion
+{
+    constructor(name)
+    {
+		this.name = name;
+		loadChampion();
+
+    }
+}
+
+
 /// PLAYER BASE
 // Resources, Production
 class PlayerBase {
@@ -54,6 +66,12 @@ class PlayerBase {
 		this.farmer_pop = 0;
 
 		this.attractivity = 0; // can be negative and lose population ?
+
+		this.champion = new Champion("tom");
+		if (this.champion.name == "tom")
+		this.attractivity = 1431231;
+
+		this.world = new WorldCanvas();
 	}
 
 	// MUTATORS
@@ -239,7 +257,7 @@ class Player {
 	constructor() 
 	{ 
 		this._level 			= 0; 
-		this.LEVELS_ROCKS_REQ 	= [10, 20, 30];
+		this.LEVELS_ROCKS_REQ 	= [10, 20, 30, 40];
 		this.base = new PlayerBase(this);
 		this.initializeUnlockables();
 
@@ -257,6 +275,7 @@ class Player {
 		this._b_cairn_unlocked = false;
 		this._b_buy_housing_unlocked = false;
 		this._b_sacrifice_unlocked = false;
+		this._b_map_unlocked = false;
 	}
 	
 	// MUTATORS
@@ -285,9 +304,10 @@ class Player {
 				break;
 			case 3:
 				this._b_sacrifice_unlocked = true;
-				//document.getElementById("souls_label").style.display = 'block';
 				document.getElementById("buy_sacrifice_upgrade_btn").style.display = 'block';
-
+			case 4:
+				this._b_map_unlocked = true;
+				this.world = new WorldCanvas();
 				break;
 			default:
 				break;
@@ -344,6 +364,31 @@ function load_features(player)
 	for (i=0; i< player.level;i++)
 	{
 		player.unlock_feature(i);
+	}
+}
+
+// -------------------------------------------
+/// CANVAS
+
+class WorldCanvas
+{
+	constructor()
+	{
+		this.init();
+		this.canvas.style.display = 'block';
+	}
+
+	init()
+	{
+		this.canvas = document.getElementById("main_canvas");
+		this.ctx_2d = this.canvas.getContext('2d');
+	}
+
+	draw()
+	{
+
+		this.ctx_2d.fillStyle = 'white	';
+		this.ctx_2d.fillRect(0, 0, 300, 300);
 	}
 }
 
@@ -430,6 +475,24 @@ function sacrificeSlave(number)
 	}
 }
 
+// CHAMPION
+function loadChampion(name)
+{
+	switch(name)
+	{
+		case "CrazyBlue":
+			break;
+		case "DirtyOrange":
+			break;
+		case "LazyRed":
+			break;
+		case "HairyBrown":
+			break;
+		case "BigCrankHandle":
+			break;
+	}
+}
+
 
 // -------------------------------------------
 /// COSTS
@@ -454,6 +517,16 @@ window.setInterval( function(){
 }, timer_freq ); // 1 sec/tick
 */
 window.setInterval( function(){
+
 	__player.update();
+	if (!!__player._b_map_unlocked)
+	{
+		var world = __player.world;
+		if (!!world)
+			world.draw();
+	}
+
 }, time_update_player);
+
+
 
