@@ -307,7 +307,7 @@ class Player {
 				document.getElementById("buy_sacrifice_upgrade_btn").style.display = 'block';
 			case 4:
 				if (!this._b_map_unlocked)
-					this.world = new WorldCanvas(20, 20);
+					this.world = new WorldCanvas(21, 21);
 				this._b_map_unlocked = true;
 				break;
 			default:
@@ -379,9 +379,12 @@ const WORLD_AREAS = [
 
 class WorldCanvas
 {
+	isBaseIndex = (element) => element == 'base';
+
+
 	WorldCanvas()
 	{
-		this(20, 20);
+		this(21, 21);
 	}
 
 	constructor(n_rows, n_columns)
@@ -395,6 +398,9 @@ class WorldCanvas
 		this.initMatrix();
 		this.initWorld();
 
+		//params
+		this.drawGrid = true;
+
 	}
 
 	initMatrix()
@@ -405,7 +411,13 @@ class WorldCanvas
 
 	initWorld()
 	{
-		this.map[10][10] = 1; //'base'
+		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+
+
+		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
 
 	init()
@@ -423,48 +435,80 @@ class WorldCanvas
 		this.ctx_2d.fillStyle = 'white';
 		this.ctx_2d.fillRect(0, 0, this.pxl_width, this.pxl_height);
 		this.ctx_2d.scale(1, 1);
-		this.drawLines();
-
+		this.drawWorld();
 
 	}
 
-	drawLines()
+	drawWorld()
 	{
 		var cell_size_w = (this.pxl_width / this.columns);
 		var cell_size_h = (this.pxl_height / this.rows);
 
-		for (var i=1; i<this.columns; i++)
+		/// DRAW TILES 
+		for ( var j_row=0; j_row < this.columns; j_row++)
 		{
-			var x_orig = i * cell_size_w;
-			var y_orig = 0;
+			for ( var i_col=0; i_col < this.rows; i_col++)
+			{
+				var area_type = this.map[j_row][i_col];
+				var x_orig 	= i_col * cell_size_w;
+				var x_end 	= (i_col+1) * cell_size_w;
 
-			var x_end = i * cell_size_w;
-			var y_end = this.pxl_height;
+				var y_end 	= (j_row+1) * cell_size_h;	
+				var y_orig 	= j_row * cell_size_h;
 
-			this.ctx_2d.beginPath();
-			this.ctx_2d.moveTo( x_orig, y_orig);
-			this.ctx_2d.lineTo( x_end, y_end);
-			this.ctx_2d.stroke();
+				this.drawTile( area_type, x_orig, y_orig, x_end, y_end);
+			}//! for i_col
+		}//! for j_row
 
-		}//!for i rows
-
-		for (var j=1; j<this.rows; j++)
+		/// DRAW GRID
+		if ( this.drawGrid )
 		{
-			var x_orig = 0;
-			var y_orig = j * cell_size_h;
+			for (var i=1; i<this.columns; i++)
+			{
 
-			var x_end = this.pxl_width;
-			var y_end = j * cell_size_h;
+					var x_orig 	= i * cell_size_w;
+					var y_orig 	= 0;
+					var x_end 	= i * cell_size_w;
+					var y_end 	= this.pxl_height;
+					this.drawLine( x_orig, y_orig, x_end, y_end);
+			}//!for i rows
 
-			this.ctx_2d.beginPath();
-			this.ctx_2d.moveTo( x_orig, y_orig);
-			this.ctx_2d.lineTo( x_end, y_end);
-			this.ctx_2d.stroke();
+			for (var j=1; j<this.rows; j++)
+			{
+					var x_orig 	= 0;
+					var y_orig 	= j * cell_size_h;
+					var x_end 	= this.pxl_width;
+					var y_end 	= j * cell_size_h;	
+					this.drawLine( x_orig, y_orig, x_end, y_end);
+			}//! for j cols
+		}//! drawGrid
 
+	}
 
-		}//! for j cols
-		//this.ctx_2d.stroke();
+	drawLine( x_orig, y_orig, x_end, y_end)
+	{
+		this.ctx_2d.beginPath();
+		this.ctx_2d.moveTo( x_orig, y_orig);
+		this.ctx_2d.lineTo( x_end, y_end);
+		this.ctx_2d.stroke();
+	}
 
+	drawTile( tile_type, x_orig, y_orig, x_end, y_end)
+	{
+		var color = 'white';
+
+		switch(tile_type)
+		{
+			case 1:
+				color = 'red';
+				break;
+			default:
+				color = 'white';
+				break;
+		}
+
+		this.ctx_2d.fillStyle = color;
+		this.ctx_2d.fillRect( x_orig, y_orig, x_end, y_end);
 	}
 
 
