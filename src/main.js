@@ -69,9 +69,9 @@ class PlayerBase {
 
 		this.champion = new Champion("tom");
 		if (this.champion.name == "tom")
-		this.attractivity = 1431231;
+		this.attractivity = 0;
 
-		this.world = new WorldCanvas();
+		this.world = new WorldCanvas(20, 20);
 	}
 
 	// MUTATORS
@@ -306,8 +306,9 @@ class Player {
 				this._b_sacrifice_unlocked = true;
 				document.getElementById("buy_sacrifice_upgrade_btn").style.display = 'block';
 			case 4:
+				if (!this._b_map_unlocked)
+					this.world = new WorldCanvas(20, 20);
 				this._b_map_unlocked = true;
-				this.world = new WorldCanvas();
 				break;
 			default:
 				break;
@@ -369,27 +370,104 @@ function load_features(player)
 
 // -------------------------------------------
 /// CANVAS
+const WORLD_AREAS = [
+	'undiscovered',
+	'base',
+	'wood',
+	'forest',
+];
 
 class WorldCanvas
 {
-	constructor()
+	WorldCanvas()
 	{
+		this(20, 20);
+	}
+
+	constructor(n_rows, n_columns)
+	{
+		// init object
 		this.init();
-		this.canvas.style.display = 'block';
+		this.rows = n_rows;
+		this.columns = n_columns;
+
+		// init world
+		this.initMatrix();
+		this.initWorld();
+
+	}
+
+	initMatrix()
+	{
+		var default_value = 0;
+		this.map = [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
+	}
+
+	initWorld()
+	{
+		this.map[10][10] = 1; //'base'
 	}
 
 	init()
 	{
 		this.canvas = document.getElementById("main_canvas");
 		this.ctx_2d = this.canvas.getContext('2d');
+		this.canvas.style.display = 'initial';
+		this.pxl_width = this.canvas.width;
+		this.pxl_height = this.canvas.height;
 	}
 
 	draw()
 	{
 
-		this.ctx_2d.fillStyle = 'white	';
-		this.ctx_2d.fillRect(0, 0, 300, 300);
+		this.ctx_2d.fillStyle = 'white';
+		this.ctx_2d.fillRect(0, 0, this.pxl_width, this.pxl_height);
+		this.ctx_2d.scale(1, 1);
+		this.drawLines();
+
+
 	}
+
+	drawLines()
+	{
+		var cell_size_w = (this.pxl_width / this.columns);
+		var cell_size_h = (this.pxl_height / this.rows);
+
+		for (var i=1; i<this.columns; i++)
+		{
+			var x_orig = i * cell_size_w;
+			var y_orig = 0;
+
+			var x_end = i * cell_size_w;
+			var y_end = this.pxl_height;
+
+			this.ctx_2d.beginPath();
+			this.ctx_2d.moveTo( x_orig, y_orig);
+			this.ctx_2d.lineTo( x_end, y_end);
+			this.ctx_2d.stroke();
+
+		}//!for i rows
+
+		for (var j=1; j<this.rows; j++)
+		{
+			var x_orig = 0;
+			var y_orig = j * cell_size_h;
+
+			var x_end = this.pxl_width;
+			var y_end = j * cell_size_h;
+
+			this.ctx_2d.beginPath();
+			this.ctx_2d.moveTo( x_orig, y_orig);
+			this.ctx_2d.lineTo( x_end, y_end);
+			this.ctx_2d.stroke();
+
+
+		}//! for j cols
+		//this.ctx_2d.stroke();
+
+	}
+
+
 }
 
 
