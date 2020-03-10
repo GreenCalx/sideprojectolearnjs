@@ -373,13 +373,19 @@ function load_features(player)
 const WORLD_AREAS = [
 	'undiscovered',
 	'base',
-	'wood',
 	'forest',
+	'mountain',
+	'road',
+	'water'
 ];
 
 class WorldCanvas
 {
 	isBaseIndex = (element) => element == 'base';
+	isForestIndex = (element) => element == 'forest';
+	isMountainIndex = (element) => element == 'mountain';
+	isRoadIndex = (element) => element == 'road';
+	isWaterIndex = (element) => element == 'water';
 
 
 	WorldCanvas()
@@ -411,11 +417,19 @@ class WorldCanvas
 
 	initWorld()
 	{
-		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
-		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
-		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
-		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+		this.map[0].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
+		this.map[this.rows-1].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
 
+
+		this.map[8][10] = WORLD_AREAS.findIndex(this.isForestIndex);
+		this.map[9][11] = WORLD_AREAS.findIndex(this.isForestIndex);
+		this.map[8][11] = WORLD_AREAS.findIndex(this.isForestIndex);
+
+		this.map[9][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
+		this.map[8][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
+		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
+		this.map[7][9] 	= WORLD_AREAS.findIndex(this.isRoadIndex);
+		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
 
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
@@ -499,8 +513,20 @@ class WorldCanvas
 
 		switch(tile_type)
 		{
-			case 1:
-				color = 'red';
+			case WORLD_AREAS.findIndex(this.isBaseIndex):
+				color = 'orangered';
+				break;
+			case WORLD_AREAS.findIndex(this.isForestIndex):
+				color = 'palegreen';
+				break;
+			case WORLD_AREAS.findIndex(this.isMountainIndex):
+				color = 'rosybrown';
+				break;
+			case WORLD_AREAS.findIndex(this.isRoadIndex):
+				color = 'sandybrown';
+				break;
+			case WORLD_AREAS.findIndex(this.isWaterIndex):
+				color = 'paleturquoise';
 				break;
 			default:
 				color = 'white';
