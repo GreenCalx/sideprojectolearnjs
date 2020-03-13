@@ -371,6 +371,7 @@ function load_features(player)
 // -------------------------------------------
 /// CANVAS
 const WORLD_AREAS = [
+	'none',
 	'undiscovered',
 	'base',
 	'forest',
@@ -381,6 +382,8 @@ const WORLD_AREAS = [
 
 class WorldCanvas
 {
+	isNoneIndex = (element) => element == 'none';
+	isUndiscoveredIndex = (element) => element == 'undiscovered';
 	isBaseIndex = (element) => element == 'base';
 	isForestIndex = (element) => element == 'forest';
 	isMountainIndex = (element) => element == 'mountain';
@@ -399,6 +402,8 @@ class WorldCanvas
 		this.init();
 		this.rows = n_rows;
 		this.columns = n_columns;
+		this.cell_size_w = (this.pxl_width / this.columns);
+		this.cell_size_h = (this.pxl_height / this.rows);
 
 		// init world
 		this.initMatrix();
@@ -406,8 +411,50 @@ class WorldCanvas
 
 		//params
 		this.drawGrid = true;
+		this.selected_zone_index = 0;
+
+		// Init user mouse control
+		this.canvas.addEventListener(
+			'mousedown', function(event) {
+				var pos = getMousePos( __player.world.canvas, event);
+				__player.world.selectZone( pos.x, pos.y);
+			}, false
+		);
 
 	}
+
+	selectZone(pos_x, pos_y)
+	{
+		var col_index = 0;
+		for (var i=1; i <= this.columns; i++)
+		{
+			if ( pos_x >= i * this.cell_size_w)
+			{
+				if  ( pos_x > ( (i+1) *this.cell_size_w) )
+					continue;
+				else
+				{ col_index = i; break;}
+			}
+		}
+
+		var row_index = 0;
+		for (var j=1; j <= this.rows; j++)
+		{
+			if ( pos_y >= j * this.cell_size_h)
+			{
+				if  ( pos_y > ( (j+1) *this.cell_size_h) )
+					continue;
+				else
+				{ row_index = j;  break; }
+			}
+		} 
+
+		document.getElementById("zone_debug_label").innerHTML = " [" + row_index + "] ["+  col_index + "] ";
+		this.selected_zone_index = this.map[row_index][col_index];
+		
+	}
+
+
 
 	initMatrix()
 	{
@@ -420,8 +467,15 @@ class WorldCanvas
 		this.map[0].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
 		this.map[this.rows-1].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
 
+		this.map[1][0] = WORLD_AREAS.findIndex(this.isForestIndex);
 
-		this.map[8][10] = WORLD_AREAS.findIndex(this.isForestIndex);
+		this.map[1][1] = WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.map[2][2] = WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.map[3][3] = WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.map[4][4] = WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.map[5][5] = WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.map[6][6] = WORLD_AREAS.findIndex(this.isMountainIndex);
+
 		this.map[9][11] = WORLD_AREAS.findIndex(this.isForestIndex);
 		this.map[8][11] = WORLD_AREAS.findIndex(this.isForestIndex);
 
@@ -451,12 +505,18 @@ class WorldCanvas
 		this.ctx_2d.scale(1, 1);
 		this.drawWorld();
 
+		this.refreshUI();
+	}
+
+	refreshUI()
+	{
+		document.getElementById("selected_zone_label").innerHTML = WORLD_AREAS[ this.selected_zone_index ];
 	}
 
 	drawWorld()
 	{
-		var cell_size_w = (this.pxl_width / this.columns);
-		var cell_size_h = (this.pxl_height / this.rows);
+		this.cell_size_w = (this.pxl_width / this.columns);
+		this.cell_size_h = (this.pxl_height / this.rows);
 
 		/// DRAW TILES 
 		for ( var j_row=0; j_row < this.columns; j_row++)
@@ -464,11 +524,11 @@ class WorldCanvas
 			for ( var i_col=0; i_col < this.rows; i_col++)
 			{
 				var area_type = this.map[j_row][i_col];
-				var x_orig 	= i_col * cell_size_w;
-				var x_end 	= (i_col+1) * cell_size_w;
+				var x_orig 	= i_col * this.cell_size_w;
+				var x_end 	= (i_col+1) * this.cell_size_w;
 
-				var y_end 	= (j_row+1) * cell_size_h;	
-				var y_orig 	= j_row * cell_size_h;
+				var y_end 	= (j_row+1) * this.cell_size_h;	
+				var y_orig 	= j_row * this.cell_size_h;
 
 				this.drawTile( area_type, x_orig, y_orig, x_end, y_end);
 			}//! for i_col
@@ -480,9 +540,9 @@ class WorldCanvas
 			for (var i=1; i<this.columns; i++)
 			{
 
-					var x_orig 	= i * cell_size_w;
+					var x_orig 	= i * this.cell_size_w;
 					var y_orig 	= 0;
-					var x_end 	= i * cell_size_w;
+					var x_end 	= i * this.cell_size_w;
 					var y_end 	= this.pxl_height;
 					this.drawLine( x_orig, y_orig, x_end, y_end);
 			}//!for i rows
@@ -490,9 +550,9 @@ class WorldCanvas
 			for (var j=1; j<this.rows; j++)
 			{
 					var x_orig 	= 0;
-					var y_orig 	= j * cell_size_h;
+					var y_orig 	= j * this.cell_size_h;
 					var x_end 	= this.pxl_width;
-					var y_end 	= j * cell_size_h;	
+					var y_end 	= j * this.cell_size_h;	
 					this.drawLine( x_orig, y_orig, x_end, y_end);
 			}//! for j cols
 		}//! drawGrid
@@ -622,6 +682,15 @@ function sacrificeSlave(number)
 		__player.base.souls+=number;
 	}
 }
+
+// GET MOUSE
+function getMousePos( iCanvas, event) {
+	var rect = iCanvas.getBoundingClientRect();
+	return {
+	  x: event.clientX - rect.left,
+	  y: event.clientY - rect.top
+	};
+  }
 
 // CHAMPION
 function loadChampion(name)
