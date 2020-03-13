@@ -430,10 +430,8 @@ class WorldCanvas
 		{
 			if ( pos_x >= i * this.cell_size_w)
 			{
-				if  ( pos_x > ( (i+1) *this.cell_size_w) )
-					continue;
-				else
-				{ col_index = i; break;}
+				if  ( pos_x < ( (i+1) *this.cell_size_w) )
+				{ col_index = i; break;}				
 			}
 		}
 
@@ -442,10 +440,8 @@ class WorldCanvas
 		{
 			if ( pos_y >= j * this.cell_size_h)
 			{
-				if  ( pos_y > ( (j+1) *this.cell_size_h) )
-					continue;
-				else
-				{ row_index = j;  break; }
+				if  ( pos_y < ( (j+1) *this.cell_size_h) )
+				{ row_index = j;  break; }	
 			}
 		} 
 
@@ -685,11 +681,11 @@ function sacrificeSlave(number)
 
 // GET MOUSE
 function getMousePos( iCanvas, event) {
-	var rect = iCanvas.getBoundingClientRect();
-	return {
-	  x: event.clientX - rect.left,
-	  y: event.clientY - rect.top
-	};
+    var rect = iCanvas.getBoundingClientRect();
+    return {
+        x: (event.clientX - rect.left) / (rect.right - rect.left) * iCanvas.width,
+        y: (event.clientY - rect.top) / (rect.bottom - rect.top) * iCanvas.height
+    };
   }
 
 // CHAMPION
