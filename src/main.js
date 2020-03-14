@@ -4,7 +4,8 @@ const GAME_STATS = {
 	HUNGER_RATE: 0.66,
 	DEATH_CHANCE_STARVING: 0.05,
 	OVERPOPULATION_RATE: 5.0,
-	STARVING_ATTRACTIVITY_LOSS: 10
+	STARVING_ATTRACTIVITY_LOSS: 10,
+	SACRIFICE_TIME_THRESHOLD : 5000
 };
 
 // DEBUG
@@ -49,6 +50,8 @@ class PlayerBase {
 		this.camp_update_counter = 1000;
 		this.camp_update_elapsed = 0;
 
+		this.time_since_last_sacrifice = 0;
+		this.sacrifice_loss_attractrivity_factor = 1;
 
 		this.rocks = 0;
 		this.cairns = 0;
@@ -323,6 +326,12 @@ class Player {
 
 		this.updateLevel();
 
+
+		this.time_since_last_sacrifice++;
+		if (this.time_since_last_sacrifice> GAME_STATS.SACRIFICE_TIME_THRESHOLD)
+		{
+			this.sacrifice_loss_attractrivity_factor -= ( sacrifice_loss_attractrivity_factor > 1 ) ? 1 : 0;
+		}
 
 		this.refreshView();
 	}
@@ -676,6 +685,8 @@ function sacrificeSlave(number)
 	{
 		__player.base.losePopulation(1);
 		__player.base.souls+=number;
+		__player.base.time_since_last_sacrifice = 0;
+		__player.base.sacrifice_loss_attractrivity_factor++;
 	}
 }
 
