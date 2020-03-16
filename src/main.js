@@ -417,10 +417,12 @@ class WorldCanvas
 		// init world
 		this.initMatrix();
 		this.initWorld();
+		this.initLocalAreas();
 
 		//params
 		this.drawGrid = true;
 		this.selected_zone_index = 0;
+		this.selected_zone = { x: 0, y: 0 };
 
 		// Init user mouse control
 		this.canvas.addEventListener(
@@ -434,6 +436,8 @@ class WorldCanvas
 
 	selectZone(pos_x, pos_y)
 	{
+
+		// find selected zone
 		var col_index = 0;
 		for (var i=1; i <= this.columns; i++)
 		{
@@ -456,16 +460,55 @@ class WorldCanvas
 
 		document.getElementById("zone_debug_label").innerHTML = " [" + row_index + "] ["+  col_index + "] ";
 		this.selected_zone_index = this.map[row_index][col_index];
-		
+		this.selected_zone.x = col_index;
+		this.selected_zone.y = row_index;
+
+		this.drawSelectedBaseCursor( row_index, col_index);
+
+		this.loadLocalArea();
+
 	}
 
+	drawSelectedBaseCursor( iRowIndex, iColIndex)
+	{
 
+		var x_orig = iColIndex * this.cell_size_w;
+		var y_orig = iRowIndex * this.cell_size_h;
+
+		var x_top_right = (iColIndex+1) * this.cell_size_w;
+		var y_top_right = (iRowIndex) * this.cell_size_h;
+		
+		var x_bot_right = (iColIndex+1) * this.cell_size_w;
+		var y_bot_right = (iRowIndex+1) * this.cell_size_h;
+
+		var x_bot_left = (iColIndex) * this.cell_size_w;
+		var y_bot_left = (iRowIndex+1) * this.cell_size_h;
+
+		var color = '#a142f5';
+		var lineWidth = 3;
+		this.drawLine( x_orig, y_orig, x_top_right, y_top_right, color, lineWidth);
+		this.drawLine( x_top_right, y_top_right, x_bot_right, y_bot_right, color, lineWidth);
+		this.drawLine( x_orig, y_orig, x_bot_left, y_bot_left, color, lineWidth);
+		this.drawLine( x_bot_left, y_bot_left, x_bot_right, y_bot_right, color, lineWidth);
+
+	}
+	
+	loadLocalArea()
+	{
+
+	}
 
 	initMatrix()
 	{
 		var default_value = 0;
 		this.map = [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
 	}
+
+	initLocalAreas()
+	{
+		this.local_areas = [...Array(this.rows)].map(e => Array(this.columns).fill( 
+			new LocalArea( randomStr(8, "123456789abcdefABCDEF!"), WORLD_AREAS[0]) 
+			) );	}
 
 	initWorld()
 	{
@@ -509,6 +552,8 @@ class WorldCanvas
 		this.ctx_2d.fillRect(0, 0, this.pxl_width, this.pxl_height);
 		this.ctx_2d.scale(1, 1);
 		this.drawWorld();
+		if ( this.selected_zone_index != this.isNoneIndex )
+			this.drawSelectedBaseCursor( this.selected_zone.y, this.selected_zone.x);
 
 		this.refreshUI();
 	}
@@ -566,10 +611,29 @@ class WorldCanvas
 
 	drawLine( x_orig, y_orig, x_end, y_end)
 	{
+		/*
 		this.ctx_2d.beginPath();
 		this.ctx_2d.moveTo( x_orig, y_orig);
 		this.ctx_2d.lineTo( x_end, y_end);
 		this.ctx_2d.stroke();
+		*/
+		this.drawLine( x_orig, y_orig, x_end, y_end, '#000000', 1);
+	}
+
+	drawLine( x_orig, y_orig, x_end, y_end, color, line_width)
+	{
+		this.ctx_2d.beginPath();
+		this.ctx_2d.moveTo( x_orig, y_orig);
+		this.ctx_2d.lineTo( x_end, y_end);
+
+		var previous_color = this.ctx_2d.strokeStyle;
+		var previous_width = this.ctx_2d.lineWidth;
+		this.ctx_2d.lineWidth = line_width;
+		this.ctx_2d.strokeStyle = color;
+		this.ctx_2d.stroke();
+		this.ctx_2d.strokeStyle = previous_color;
+		this.ctx_2d.lineWidth = previous_width;
+
 	}
 
 	drawTile( tile_type, x_orig, y_orig, x_end, y_end)
@@ -603,7 +667,26 @@ class WorldCanvas
 	}
 
 
-}
+}//! WorldCanvas
+
+// -------------------------------------------
+/// LOCAL AREA
+
+class LocalArea
+{
+	constructor( iRNGSeed, iAreaType)
+	{
+		this.seed = iRNGSeed;
+		this.area_type = iAreaType;
+	}
+
+	draw()
+	{
+
+	}
+
+
+}//! LocalArea
 
 
 // -------------------------------------------
@@ -729,7 +812,16 @@ function housingUpgradeCost()
 {
 	return Math.floor(10 * Math.pow(1.5, __player.base.available_housing)); 
 }
+
 // -------------------------------------------
+/// UTILS
+function randomStr( len, arr) { 
+	var ans = ''; 
+	for (var i = len; i > 0; i--)
+			ans += arr[Math.floor(Math.random() * arr.length)]; 
+	return ans; 
+} 
+
 
 // GAME LOOP
 var timer_freq 			= 1000 ; // 1 sec
