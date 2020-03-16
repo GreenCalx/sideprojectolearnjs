@@ -383,9 +383,9 @@ const WORLD_AREAS = [
 	'none',
 	'undiscovered',
 	'base',
+	'road',
 	'forest',
 	'mountain',
-	'road',
 	'water'
 ];
 
@@ -417,13 +417,18 @@ class WorldCanvas
 		// init world
 		this.initMatrix();
 		this.initWorld();
-		this.initLocalAreas();
 
-		//params
-		this.drawGrid = true;
 		this.selected_zone_index = 0;
 		this.selected_zone = { x: 0, y: 0 };
 
+		this.initLocalAreas();
+		this.loadLocalArea();
+
+		//params
+		this.drawGrid = true;
+		this.world_seed = randomStr(6, "mauveMAUVE123456!");
+
+		
 		// Init user mouse control
 		this.canvas.addEventListener(
 			'mousedown', function(event) {
@@ -495,7 +500,7 @@ class WorldCanvas
 	
 	loadLocalArea()
 	{
-
+		this.selected_local_area = this.local_areas[this.selected_zone.y][this.selected_zone.x];
 	}
 
 	initMatrix()
@@ -508,15 +513,61 @@ class WorldCanvas
 	{
 		this.local_areas = [...Array(this.rows)].map(e => Array(this.columns).fill( 
 			new LocalArea( randomStr(8, "123456789abcdefABCDEF!"), WORLD_AREAS[0]) 
-			) );	}
+			) );	
+	}
+
+	getTerrainAreas()
+	{
+		return WORLD_AREAS.filter( e => (e!=WORLD_AREAS[0]) && 
+																		(e!=WORLD_AREAS[1]) && 
+																		(e!=WORLD_AREAS[2]) && 
+																		(e!=WORLD_AREAS[3]) );
+	}
 
 	initWorld()
 	{
-		this.map[0].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
-		this.map[this.rows-1].fill( WORLD_AREAS.findIndex(this.isWaterIndex));
+		// 1 Borders are water
+		var water = WORLD_AREAS.findIndex(this.isWaterIndex);
+		this.map[0].fill(water);
+		this.map[this.rows-1].fill(water);
+		for (var i=0; i < this.rows; i++)
+		{
+			this.map[i][0] = water;
+			this.map[i][this.columns-1] = water;
+		}
 
-		this.map[1][0] = WORLD_AREAS.findIndex(this.isForestIndex);
+		// 2 generate weight table for terrain
+		// > total is 100
+		var weight_table = {};
+		var terrains = this.getTerrainAreas();
+		//terrains.forEach( e => weight_table[e] = 100 / terrains.length ) ; // equirepartition
 
+		// 3 generate terrain
+		var remaining_tiles = (this.rows - 2) * (this.columns - 2) - 1; // minus water border and base
+		var to_dispatch = {
+			n_water_tiles  	:  0, 
+			n_forest_tiles 	:  0,
+			n_moutain_tiles :  0
+		}
+		var forest_proba = weight_table['forest'];
+		var mountain_proba = weight_table['mountain'];
+		var water_proba = weight_table['water'];
+		while( remaining_tiles > 0 )
+		{
+			var rand_res = Math.random() * 100;
+			if ( rand_res < forest_proba )
+				to_dispatch.n_forest_tiles++;
+			else if (rand_res < ( forest_proba + mountain_proba ) )
+				to_dispatch.n_moutain_tiles++;
+			else if ( rand_res < ( forest_proba + mountain_proba + water_proba ) )
+				to_dispatch.n_water_tiles++;
+			remaining_tiles--;
+		}
+		this.dispatchOnMap(to_dispatch);
+
+		// 4 generate life
+
+/*
 		this.map[1][1] = WORLD_AREAS.findIndex(this.isMountainIndex);
 		this.map[2][2] = WORLD_AREAS.findIndex(this.isMountainIndex);
 		this.map[3][3] = WORLD_AREAS.findIndex(this.isMountainIndex);
@@ -532,15 +583,52 @@ class WorldCanvas
 		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
 		this.map[7][9] 	= WORLD_AREAS.findIndex(this.isRoadIndex);
 		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
-
+*/
+	// 5 insert base in da middle
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
 
+	dispatchOnMap( iTo_dispatch )
+	{
+		var forest = iTo_dispatch.n_forest_tiles;
+		var mountain = iTo_dispatch.n_mountain_tiles;
+		var water = iTo_dispatch.n_water_tiles;
+
+		for ( var i = 1; i < this.rows - 1 ; i++)
+		{
+			for ( var j = 1; j < this.columns - 1; j++)
+			{
+				if ( (i==5) && (j==5) )
+					continue; // base
+
+				var rand_res = Math.random() * 3;
+				if ( rand_res < 1)
+				{
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+				}
+				else if ( rand_res < 2 )
+				{
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+				}
+				else if ( rand_res <= 3)
+				{
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+				}
+
+			}//! j col
+		}//! i row
+
+	}
 	init()
 	{
 		this.canvas = document.getElementById("main_canvas");
 		this.ctx_2d = this.canvas.getContext('2d');
 		this.canvas.style.display = 'initial';
+
+		this.area_canvas = document.getElementById("local_area_canvas");
+		this.arena_ctx_2d = this.area_canvas.getContext('2d');
+		this.area_canvas.style.display = 'initial';
+
 		this.pxl_width = this.canvas.width;
 		this.pxl_height = this.canvas.height;
 	}
@@ -551,11 +639,21 @@ class WorldCanvas
 		this.ctx_2d.fillStyle = 'white';
 		this.ctx_2d.fillRect(0, 0, this.pxl_width, this.pxl_height);
 		this.ctx_2d.scale(1, 1);
+
 		this.drawWorld();
 		if ( this.selected_zone_index != this.isNoneIndex )
 			this.drawSelectedBaseCursor( this.selected_zone.y, this.selected_zone.x);
 
 		this.refreshUI();
+
+
+	}
+
+	drawLocalArea()
+	{
+		this.arena_ctx_2d.fillStyle = this.getTileColor( this.map[this.selected_zone.y][this.selected_zone.x] );
+		this.arena_ctx_2d.fillRect(0, 0, this.pxl_width, this.pxl_height);
+		this.arena_ctx_2d.scale(1, 1);
 	}
 
 	refreshUI()
@@ -636,10 +734,9 @@ class WorldCanvas
 
 	}
 
-	drawTile( tile_type, x_orig, y_orig, x_end, y_end)
+	getTileColor(tile_type)
 	{
 		var color = 'white';
-
 		switch(tile_type)
 		{
 			case WORLD_AREAS.findIndex(this.isBaseIndex):
@@ -661,8 +758,12 @@ class WorldCanvas
 				color = 'white';
 				break;
 		}
+		return color;
+	}
 
-		this.ctx_2d.fillStyle = color;
+	drawTile( tile_type, x_orig, y_orig, x_end, y_end)
+	{
+		this.ctx_2d.fillStyle = this.getTileColor(tile_type);
 		this.ctx_2d.fillRect( x_orig, y_orig, x_end, y_end);
 	}
 
@@ -678,9 +779,17 @@ class LocalArea
 	{
 		this.seed = iRNGSeed;
 		this.area_type = iAreaType;
+
+		this.init();
+
 	}
 
-	draw()
+	init()
+	{
+
+	}
+
+	draw( iContext2D)
 	{
 
 	}
@@ -839,7 +948,11 @@ window.setInterval( function(){
 	{
 		var world = __player.world;
 		if (!!world)
+		{
 			world.draw();
+			world.drawLocalArea();
+		}	
+			
 	}
 
 }, time_update_player);
