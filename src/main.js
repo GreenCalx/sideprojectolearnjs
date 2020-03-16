@@ -563,28 +563,18 @@ class WorldCanvas
 				to_dispatch.n_water_tiles++;
 			remaining_tiles--;
 		}
-		this.dispatchOnMap(to_dispatch);
+
+		var map_is_valid = false;
+		while ( !map_is_valid )
+		{
+			this.dispatchOnMap(to_dispatch);
+			this.checkMapRules(to_dispatch);
+		}
 
 		// 4 generate life
 
-/*
-		this.map[1][1] = WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.map[2][2] = WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.map[3][3] = WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.map[4][4] = WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.map[5][5] = WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.map[6][6] = WORLD_AREAS.findIndex(this.isMountainIndex);
 
-		this.map[9][11] = WORLD_AREAS.findIndex(this.isForestIndex);
-		this.map[8][11] = WORLD_AREAS.findIndex(this.isForestIndex);
-
-		this.map[9][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
-		this.map[8][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
-		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
-		this.map[7][9] 	= WORLD_AREAS.findIndex(this.isRoadIndex);
-		this.map[7][10] = WORLD_AREAS.findIndex(this.isRoadIndex);
-*/
-	// 5 insert base in da middle
+		// 5 insert base in da middle
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
 
@@ -602,23 +592,35 @@ class WorldCanvas
 					continue; // base
 
 				var rand_res = Math.random() * 3;
-				if ( rand_res < 1)
+				if ( (rand_res < 1) && ( forest > 0) )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+					forest--;
 				}
-				else if ( rand_res < 2 )
+				else if ( (rand_res < 2) && ( mountain > 0) )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+					mountain--;
 				}
-				else if ( rand_res <= 3)
+				else if ( (rand_res <= 3) && ( water > 0) )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+					water--;
 				}
 
 			}//! j col
 		}//! i row
+		iTo_dispatch.n_forest_tiles = forest;
+		iTo_dispatch.n_mountain_tiles = mountain;
+		iTo_dispatch.n_water_tiles = water;
 
+	}//! dispatch
+
+	checkMapRules(oTo_dispatch)
+	{
+		// Todo... output in oto_dispatch
 	}
+
 	init()
 	{
 		this.canvas = document.getElementById("main_canvas");
