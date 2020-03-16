@@ -21,45 +21,92 @@
 	<p> <b>PLAYER</b></p>
 	<p> LEVEL <span style="color:blue" id="player_level_label">0</span></p>
 	
-	<p> <b>PLAYER BASE </b></p>
-	<p> # rocks :  <span style="color:blue" id="rocks_label">0</span> </p>
-	<p> # cairns : <span style="color:blue" id="cairnUpgrade_label">0</span></p>
-	<p> # food : <span style="color:blue" id="food_label">0</span></p>
-	<p> # population :  <span style="color:blue" id="population_label">0</span></p>
-	<p> # housing_available : <span style="color:blue" id="housing_available_label">0</span></p>
-	<p> # attractivity : <span style="color:blue" id="attractivity_label">0</span></p>
-	<p> # souls : <span style="color:blueviolet" id="souls_label_cpt">0</span></p>
-	<p> >> ROCK PRODUCTION  <span style="color:blue" id="autoRocks_label">0</span></p>
-	<p> >> FOOD PRODUCTION  <span style="color:blue" id="foodProduction_label">0</span></p>
-	<!-- BASE UPGRADES  -->
-	<p> <i> -- base upgrades -- </i></p>
-	<button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button>
-	<button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Buy housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button>
-	
-	
-	<button onClick="sacrificeSlave(1)" style="display:none" id="buy_sacrifice_upgrade_btn"> Sacrifice <span style="color:blue" id="cost_sacrifice"> 0 </span> slave </button>
+	<div>
+			<p> <b>PLAYER BASE </b></p>
+			<table style="border: 2px solid black; border-collapse: collapse;">
+				<tr>
+					<th style="border: 1px solid black; padding: 10px;"> <b>resources</b> </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> rock </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> cairns </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> food </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> population </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> housing_available </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> attractivity </th>
+					<th style="border: 1px solid black; padding: 10px; font-weight: normal;"> souls </th>
+
+				</tr>
+				<tr>
+					<th style="border: 1px solid black; padding: 10px;"><b>#</b></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="rocks_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="cairnUpgrade_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="food_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="population_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="housing_available_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blue" id="attractivity_label">0</span></th>
+					<th style="border: 1px solid black; padding: 10px;"><span style="color:blueviolet" id="souls_label_cpt">0</span></th>
+				</tr>
+			</table>
+		</br>
+			<table style="border: 2px solid brown; border-collapse: collapse;">
+				<tr>
+					<th style="border: 1px solid brown; padding: 10px;"> <b>production</b> </th>
+					<th style="border: 1px solid brown; padding: 10px; font-weight: normal;"> rocks </th>
+					<th style="border: 1px solid brown; padding: 10px; font-weight: normal;"> food </th>
+
+				</tr>
+				<tr>
+					<th style="border: 1px solid brown; padding: 10px;"><b>#</b></th>
+					<th style="border: 1px solid brown; padding: 10px;"><span style="color:blue" id="autoRocks_label">0</span></th>
+					<th style="border: 1px solid brown; padding: 10px;"><span style="color:blue" id="foodProduction_label">0</span></th>
+				</tr>
+			</table>
+	</div>
 
 
-	<!-- <script type="text/typescript" src="stats.ts"></script> -->
+	<!-- BASE COMMANDS  -->
+	<p> <b>┌ BASE COMMANDS ┐</b></p>
+	<div id ="base_commands_div">
+		<table>
+			<tr>
+				<th><button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button></th>
+				<th><button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Expand housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button></th>
+				<th><button onClick="sacrificeSlave(1)" style="display:none" id="buy_sacrifice_upgrade_btn"> Sacrifice <span style="color:blue" id="cost_sacrifice"> 0 </span> slave </button></th>
+			</tr>
+			
+		</table>
 
-	<!-- JOBS -->
+		<!-- JOBS -->
+		<table>
+			<!-- MINE --> 
+			<tr>
+				<th><b>MINE : </b></th>
+				<th><button onClick="assignToMine(1)" style="display:none" id="assign_to_mine_btn"> Assign <span style="color:purple" id="n_pop_assign_mine">1</span> slave </button></th>
+				<th><button onClick="deassignFromMine(1)" style="display:none" id="deassign_from_mine_btn"> De-assign <span style="color:purple" id="n_pop_deassign_mine">1</span> slave  </button></th>
+			</tr>
+			<!-- FARM --> 
+			<tr>
+					<th><b>FARM : </b></th>
+					<th><button onClick="assignToFarm(1)" style="display:none" id="assign_to_farm_btn"> Assign <span style="color:purple" id="n_pop_assign_farm">1</span> slave  </button></th>
+					<th><button onClick="deassignFromFarm(1)" style="display:none" id="deassign_from_farm_btn"> De-assign <span style="color:purple" id="n_pop_deassign_farm">1</span> slave </button></th>
+			</tr>
+		</table>
+	</div>
+
 	<table>
-		<!-- MINE --> 
 		<tr>
-			<th><b>MINE : </b></th>
-			<th><button onClick="assignToMine(1)" style="display:none" id="assign_to_mine_btn"> Assign <span style="color:purple" id="n_pop_assign_mine">1</span> slave </button></th>
-			<th><button onClick="deassignFromMine(1)" style="display:none" id="deassign_from_mine_btn"> De-assign <span style="color:purple" id="n_pop_deassign_mine">1</span> slave  </button></th>
+			<th style="padding: 5px; text-align: left;">Idle</th>
+			<th><span style="color:black; text-align: left;" id="idle_pop_label"></span></th>
 		</tr>
-		<!-- FARM --> 
 		<tr>
-				<th><b>FARM : </b></th>
-				<th><button onClick="assignToFarm(1)" style="display:none" id="assign_to_farm_btn"> Assign <span style="color:purple" id="n_pop_assign_farm">1</span> slave  </button></th>
-				<th><button onClick="deassignFromFarm(1)" style="display:none" id="deassign_from_farm_btn"> De-assign <span style="color:purple" id="n_pop_deassign_farm">1</span> slave </button></th>
+			<th style="padding: 5px; text-align: left;">Miners</th>
+			<th><span style="color:brown; text-align: left;" id="miners_pop_label"></span></th>
+		</tr>
+		<tr>
+			<th style="padding: 5px; text-align: left;">Farmers</th>
+			<th><span style="color:rgb(99, 205, 50); text-align: left;" id="farmers_pop_label"></span></th>
 		</tr>
 	</table>
-	<p> <b>Idle : </b> <span style="color:black" id="idle_pop_label"></span></p>
-	<p> <b>Miners : </b> <span style="color:brown" id="miners_pop_label"></span></p>
-	<p> <b>Farmers : </b> <span style="color:rgb(99, 205, 50)" id="farmers_pop_label"></span></p>
+
 
 	<style type="text/css">
 		canvas { 
@@ -72,7 +119,11 @@
 	  <p>Selected area :  <span style="color:blueviolet" id="selected_zone_label">none</span></p>
 	  <p>Selected area :  <span style="color:blueviolet" id="zone_debug_label">none</span></p>
 
-	<canvas display="display:none" id="main_canvas"  width ="480" height="480">a</canvas>
-
+	 <table>
+		<tr>
+			<th><canvas display="display:none" id="main_canvas"  width ="480" height="480">a</canvas></th>
+			<th><canvas display="display:none" id="zoom_canvas"  width ="480" height="480">b</canvas></th>
+		</tr>
+	</table>
 	</body>
 </html>
