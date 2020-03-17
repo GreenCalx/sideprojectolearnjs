@@ -613,39 +613,20 @@ class WorldCanvas
 						n_water++;
 				});
 
-				var n_types = {};
-				n_types["f"] = n_forest;
-				n_types["m"] = n_mountain;
-				n_types["w"] = n_water;
-
-				var to_array = [];
-				for (var key in n_types) {
-				to_array.push({
-					name: key,
-					value: n_types[key]
-				});
-				}
-
-				var sorted = to_array.sort(
-					function(lval, rval) {
-						(lval.value < rval.value ) ?  1 : ((rval.value > lval.value) ? -1 : 0);
+				// find most occ of a given tile
+				if ( n_forest > n_mountain )
+				{ 
+					if ( n_forest >= n_water )
+					{
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
 					}
-				);
-				
-				var selected_to_fill = sorted[0].key;
-				switch(selected_to_fill)
-				{
-					case "f":
-						this.map[i][j] = WORLD_AREAS.findIndex(this.isForestIndex);
-						break;
-					case "m":
-						this.map[i][j] = WORLD_AREAS.findIndex(this.isMountainIndex);
-						break;
-					case "w":
-						this.map[i][j] = WORLD_AREAS.findIndex(this.isWaterIndex);
-						break;
-					default:
-						break;
+					else {
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+					}
+				} else if (n_mountain > n_water) {
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+				} else {
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
 				}
 				
 			}
