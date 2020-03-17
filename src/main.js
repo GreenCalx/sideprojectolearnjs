@@ -595,11 +595,24 @@ class WorldCanvas
 			this.fillMapHoles();
 
 		// 4 generate life
+		this.placeCities();
 
 
 		// 5 insert base in da middle
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
+
+	placeCities()
+	{
+		for ( var i = 1; i < this.rows - 1 ; i++)
+		{
+			for ( var j = 1; j < this.columns - 1; j++)
+			{
+				// PLACE CITIES..
+			}//! j col
+		}//! i col
+
+	}//! placecities
 
 	fillMapHoles()
 	{
@@ -663,6 +676,7 @@ class WorldCanvas
 
 	}
 
+	/// TODO : integrate tile validation in dispatch to forbid bad tile placement ?
 	dispatchOnMap( iTo_dispatch, iWeightTable )
 	{
 		var forest = iTo_dispatch.n_forest_tiles;
@@ -868,6 +882,45 @@ class WorldCanvas
 		return ( links >= n_links );
 	}
 
+		// check for direct links on cell aretes and corner ( 8 direction ) of given tiletype
+		validateDirect8TileLinks( iRow, iCol, tileType, n_links)
+		{
+			var links = 0;
+	
+			if ((iRow > 0) && (iCol > 0))
+			{
+				var arete_a_tileType = this.map[iRow-1][iCol];
+				var arete_b_tileType = this.map[iRow+1][iCol];
+				var arete_c_tileType = this.map[iRow][iCol-1];
+				var arete_d_tileType = this.map[iRow][iCol+1];
+
+				var arete_e_tileType = this.map[iRow-1][iCol-1];
+				var arete_f_tileType = this.map[iRow+1][iCol+1];
+				var arete_g_tileType = this.map[iRow+1][iCol-1];
+				var arete_h_tileType = this.map[iRow-1][iCol+1];
+
+				if ( arete_a_tileType == tileType )
+					links++;
+				if ( arete_b_tileType == tileType )
+					links++;
+				if ( arete_c_tileType == tileType )
+					links++;
+				if ( arete_d_tileType == tileType )
+					links++;
+				
+				if ( arete_e_tileType == tileType )
+					links++;
+				if ( arete_f_tileType == tileType )
+					links++;
+				if ( arete_g_tileType == tileType )
+					links++;
+				if ( arete_h_tileType == tileType )
+					links++;
+			}
+			
+			return ( links >= n_links );
+		}
+
 	init()
 	{
 		this.canvas = document.getElementById("main_canvas");
@@ -882,6 +935,7 @@ class WorldCanvas
 		this.pxl_height = this.canvas.height;
 	}
 
+	/// DRAW
 	draw()
 	{
 
@@ -1048,6 +1102,19 @@ class LocalArea
 
 
 }//! LocalArea
+
+// -------------------------------------------
+/// CITY
+class City 
+{
+	constructor(name, coord_row, coord_col)
+	{
+		this.name = name;
+		this.coord_row = coord_row;
+		this.coord_col = coord_col;
+	}
+
+}
 
 
 // -------------------------------------------
