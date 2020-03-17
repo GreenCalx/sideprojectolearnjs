@@ -519,9 +519,9 @@ class WorldCanvas
 	getTerrainAreas()
 	{
 		return WORLD_AREAS.filter( e => (e!=WORLD_AREAS[0]) && 
-																		(e!=WORLD_AREAS[1]) && 
-																		(e!=WORLD_AREAS[2]) && 
-																		(e!=WORLD_AREAS[3]) );
+										(e!=WORLD_AREAS[1]) && 
+										(e!=WORLD_AREAS[2]) && 
+										(e!=WORLD_AREAS[3]) );
 	}
 
 	initWorld()
@@ -539,15 +539,18 @@ class WorldCanvas
 		// 2 generate weight table for terrain
 		// > total is 100
 		var weight_table = {};
-		var terrains = this.getTerrainAreas();
+		//var terrains = this.getTerrainAreas();
 		//terrains.forEach( e => weight_table[e] = 100 / terrains.length ) ; // equirepartition
+		weight_table['forest'] = 50;
+		weight_table['mountain'] = 25;
+		weight_table['water'] = 25;
 
 		// 3 generate terrain
-		var remaining_tiles = (this.rows - 2) * (this.columns - 2) - 1; // minus water border and base
+		var remaining_tiles = ((this.rows - 2) * (this.columns - 2)) - 1; // minus water border and base
 		var to_dispatch = {
 			n_water_tiles  	:  0, 
 			n_forest_tiles 	:  0,
-			n_moutain_tiles :  0
+			n_mountain_tiles :  0
 		}
 		var forest_proba = weight_table['forest'];
 		var mountain_proba = weight_table['mountain'];
@@ -558,17 +561,23 @@ class WorldCanvas
 			if ( rand_res < forest_proba )
 				to_dispatch.n_forest_tiles++;
 			else if (rand_res < ( forest_proba + mountain_proba ) )
-				to_dispatch.n_moutain_tiles++;
+				to_dispatch.n_mountain_tiles++;
 			else if ( rand_res < ( forest_proba + mountain_proba + water_proba ) )
 				to_dispatch.n_water_tiles++;
 			remaining_tiles--;
 		}
 
 		var map_is_valid = false;
+		var n_max_try = 5;
+		var tries = 0;
 		while ( !map_is_valid )
 		{
-			this.dispatchOnMap(to_dispatch);
-			this.checkMapRules(to_dispatch);
+			this.dispatchOnMap(to_dispatch, weight_table);
+			map_is_valid = this.checkMapRules(to_dispatch);
+			if (!map_is_valid)
+				tries++;
+			if ( tries >= n_max_try )
+				break;
 		}
 
 		// 4 generate life
@@ -578,35 +587,67 @@ class WorldCanvas
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
 	}
 
-	dispatchOnMap( iTo_dispatch )
+	dispatchOnMap( iTo_dispatch, iWeightTable )
 	{
 		var forest = iTo_dispatch.n_forest_tiles;
 		var mountain = iTo_dispatch.n_mountain_tiles;
 		var water = iTo_dispatch.n_water_tiles;
 
+		var forest_remain = ( forest > 0);
+		var mountain_remain = ( mountain > 0);
+		var water_remain = ( water > 0);
+
+		var forest_proba = iWeightTable['forest'];
+		var mountain_proba = iWeightTable['mountain'];
+		var water_proba = iWeightTable['water'];
+
 		for ( var i = 1; i < this.rows - 1 ; i++)
 		{
 			for ( var j = 1; j < this.columns - 1; j++)
 			{
-				if ( (i==5) && (j==5) )
+				if ( this.map[i][j] != 0 )
+					continue;// tile already set
+
+				if ( (i==10) && (j==10) )
 					continue; // base
 
-				var rand_res = Math.random() * 3;
-				if ( (rand_res < 1) && ( forest > 0) )
+				var rand_res = Math.random() * 100;
+				if ( (rand_res < forest_proba) && forest_remain )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
 					forest--;
 				}
-				else if ( (rand_res < 2) && ( mountain > 0) )
+				else if ( (rand_res < ( forest_proba + mountain_proba )) && mountain_remain )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
 					mountain--;
 				}
-				else if ( (rand_res <= 3) && ( water > 0) )
+				else if ( (rand_res <= ( forest_proba + mountain_proba + water_proba )) && water_remain )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
 					water--;
+				} else {
+					// random res returned no result, so picked terrain not available anymore
+					if (forest_remain)
+					{
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+						forest--;
+					}
+					else if (mountain_remain)
+					{
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+						mountain--;
+					}
+					else if (water_remain)
+					{
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+						water--;
+					}
 				}
+
+				forest_remain 	= ( forest > 0);
+				mountain_remain = ( mountain > 0);
+				water_remain 	= ( water > 0);
 
 			}//! j col
 		}//! i row
@@ -619,6 +660,100 @@ class WorldCanvas
 	checkMapRules(oTo_dispatch)
 	{
 		// Todo... output in oto_dispatch
+		var mapIsValid = true;
+
+		for ( var i = 1; i < this.rows - 1 ; i++)
+		{
+			for ( var j = 1; j < this.columns - 1; j++)
+			{
+				var tile_type = this.map[i][j];
+				var tile_is_valid = true;
+				switch( tile_type )
+				{
+					case WORLD_AREAS.findIndex( this.isForestIndex ):
+						tile_is_valid = this.validateForestTile(i, j);
+						if (!tile_is_valid)
+							oTo_dispatch.n_forest_tiles++;
+						break;
+					case WORLD_AREAS.findIndex( this.isMountainIndex ):
+						tile_is_valid = this.validateMountainTile(i, j);
+						oTo_dispatch.n_mountain_tiles++;
+						break;
+					case WORLD_AREAS.findIndex( this.isWaterIndex ):
+						tile_is_valid = this.validateWaterTile(i, j);
+						oTo_dispatch.n_water_tiles++;
+						break;
+					default:
+						break;
+				}
+				if (!tile_is_valid)
+				{
+					// redistribute_tile
+					this.map[i][j] = 0;
+					mapIsValid = false;
+				}
+			}
+		}
+
+		return mapIsValid;
+	}
+
+	validateForestTile( iRow, iCol)
+	{
+		var is_valid = false;
+		// must have a 2-link
+		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 2);
+		
+		return is_valid;	
+	}
+
+	validateMountainTile( iRow, iCol)
+	{
+		var is_valid = false;
+		// must have a 2-link
+		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
+		
+		return is_valid;	
+	}
+
+	validateWaterTile( iRow, iCol)
+	{
+		var is_valid1 = false, is_valid2 = false, is_valid3 = false;
+
+		// must be out of map center
+		is_valid2 = (iRow >= 13) || (iRow<=7);
+		is_valid3 = (iCol >= 13) || (iCol<=7);
+
+		// must have a 2-link
+		is_valid1 = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 1);
+		
+		return is_valid1 && is_valid2 && is_valid3;	
+	}
+
+
+	// check for direct link on cell aretes of given tiletype
+	validateDirectTileLinks( iRow, iCol, tileType, n_links)
+	{
+		var links = 0;
+
+		if ((iRow > 0) && (iCol > 0))
+		{
+			var arete_a_tileType = this.map[iRow-1][iCol];
+			var arete_b_tileType = this.map[iRow+1][iCol];
+			var arete_c_tileType = this.map[iRow][iCol-1];
+			var arete_d_tileType = this.map[iRow][iCol+1];
+			
+			if ( arete_a_tileType == tileType )
+				links++;
+			if ( arete_b_tileType == tileType )
+				links++;
+			if ( arete_c_tileType == tileType )
+				links++;
+			if ( arete_d_tileType == tileType )
+				links++;
+		}
+		
+		return ( links >= n_links );
 	}
 
 	init()
