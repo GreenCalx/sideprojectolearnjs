@@ -589,7 +589,10 @@ class WorldCanvas
 				break;
 		}
 		this.fillMapHoles();
-
+		// eliminate last parasites
+		map_is_valid = this.checkMapRules(to_dispatch);
+		if (!map_is_valid)
+			this.fillMapHoles();
 
 		// 4 generate life
 
@@ -622,7 +625,7 @@ class WorldCanvas
 					var curr_tile_type = nearby_tiles[l];
 					if (curr_tile_type == 0)
 						continue;
-					rescue_value = ( curr_tile_type != 0 ) ? curr_tile_type : rescue_value;
+					rescue_value = curr_tile_type;
 
 					var similar_cpt = 0;
 					for (var k = 0; k < nearby_tiles.length; k++)
@@ -801,7 +804,8 @@ class WorldCanvas
 		// must have a 2-link
 		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 2);
 		is_valid |= this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
-
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 1);
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 4);
 		return is_valid;	
 	}
 
@@ -810,7 +814,7 @@ class WorldCanvas
 		var is_valid = false;
 		// must have a 2-link
 		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
-		
+
 		return is_valid;	
 	}
 
@@ -823,7 +827,7 @@ class WorldCanvas
 		is_valid3 = (iCol >= 13) || (iCol<=7);
 
 		// must have a 2-link
-		is_valid1 = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 1);
+		is_valid1 = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 2);
 		
 		return is_valid1 && is_valid2 && is_valid3;	
 	}
@@ -832,8 +836,9 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isPlainIndex ), 0);
-		
+		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isPlainIndex ), 2);
+		is_valid |= this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 1);
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
 		return is_valid;	
 	}
 
