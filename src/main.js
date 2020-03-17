@@ -386,7 +386,8 @@ const WORLD_AREAS = [
 	'road',
 	'forest',
 	'mountain',
-	'water'
+	'water',
+	'plain'
 ];
 
 class WorldCanvas
@@ -398,6 +399,7 @@ class WorldCanvas
 	isMountainIndex = (element) => element == 'mountain';
 	isRoadIndex = (element) => element == 'road';
 	isWaterIndex = (element) => element == 'water';
+	isPlainIndex = (element) => element == 'plain';
 
 
 	WorldCanvas()
@@ -541,20 +543,24 @@ class WorldCanvas
 		var weight_table = {};
 		//var terrains = this.getTerrainAreas();
 		//terrains.forEach( e => weight_table[e] = 100 / terrains.length ) ; // equirepartition
-		weight_table['forest'] = 50;
-		weight_table['mountain'] = 25;
+		weight_table['forest'] = 20;
+		weight_table['mountain'] = 15;
 		weight_table['water'] = 25;
+		weight_table['plain'] = 40;
 
 		// 3 generate terrain
 		var remaining_tiles = ((this.rows - 2) * (this.columns - 2)) - 1; // minus water border and base
 		var to_dispatch = {
 			n_water_tiles  	:  0, 
 			n_forest_tiles 	:  0,
-			n_mountain_tiles :  0
+			n_mountain_tiles :  0,
+			n_plain_tiles : 0
 		}
 		var forest_proba = weight_table['forest'];
 		var mountain_proba = weight_table['mountain'];
 		var water_proba = weight_table['water'];
+		var plain_proba = weight_table['plain'];
+
 		while( remaining_tiles > 0 )
 		{
 			var rand_res = Math.random() * 100;
@@ -564,6 +570,9 @@ class WorldCanvas
 				to_dispatch.n_mountain_tiles++;
 			else if ( rand_res < ( forest_proba + mountain_proba + water_proba ) )
 				to_dispatch.n_water_tiles++;
+			else if ( rand_res < ( forest_proba + mountain_proba + water_proba + plain_proba ) )
+				to_dispatch.n_plain_tiles++;
+
 			remaining_tiles--;
 		}
 
@@ -579,8 +588,8 @@ class WorldCanvas
 			if ( tries >= n_max_try )
 				break;
 		}
-
 		this.fillMapHoles();
+
 
 		// 4 generate life
 
@@ -597,40 +606,57 @@ class WorldCanvas
 			{
 				if  (this.map[i][j] != 0 )
 					continue;
+
 				var nearby_tiles = [
 					this.map[i-1][j],
 					this.map[i+1][j],
 					this.map[i][j-1],
 					this.map[i][j+1],
 				];
-				var n_forest=0, n_mountain=0, n_water=0;
-				nearby_tiles.forEach( e => {
-					if ( e == WORLD_AREAS.findIndex(this.isForestIndex))
-						n_forest++;
-					else if ( e == WORLD_AREAS.findIndex(this.isMountainIndex))
-						n_mountain++;
-					else if ( e == WORLD_AREAS.findIndex(this.isWaterIndex))
-						n_water++;
-				});
 
-				// find most occ of a given tile
-				if ( n_forest > n_mountain )
-				{ 
-					if ( n_forest >= n_water )
+				var filler_found = false;
+				var rescue_value = 0;
+
+				for ( var l=0; l<nearby_tiles.length; l++)
+				{
+					var curr_tile_type = nearby_tiles[l];
+					if (curr_tile_type == 0)
+						continue;
+					rescue_value = ( curr_tile_type != 0 ) ? curr_tile_type : rescue_value;
+
+					var similar_cpt = 0;
+					for (var k = 0; k < nearby_tiles.length; k++)
 					{
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+						if(k==l)
+							continue;
+						else if ( curr_tile_type == nearby_tiles[k] )
+							similar_cpt++;
 					}
-					else {
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+
+					if (similar_cpt>1)
+					{
+						this.map[i][j] = curr_tile_type;
+						filler_found = true;
+						break;
 					}
-				} else if (n_mountain > n_water) {
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
-				} else {
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+					else if (similar_cpt==1)
+					{
+						//equal
+						// rn we take the first one
+						this.map[i][j] = curr_tile_type;
+						filler_found = true;
+						break;
+					}
+
+				}//!for tiles
+				if (!filler_found)
+				{
+					// no filler found, take first element in nearby tile different from 0
+					this.map[i][j] = rescue_value;
 				}
-				
-			}
-		}
+
+			}//! for j
+		}//! for i
 
 	}
 
@@ -639,14 +665,18 @@ class WorldCanvas
 		var forest = iTo_dispatch.n_forest_tiles;
 		var mountain = iTo_dispatch.n_mountain_tiles;
 		var water = iTo_dispatch.n_water_tiles;
+		var plain = iTo_dispatch.n_plain_tiles;
 
 		var forest_remain = ( forest > 0);
 		var mountain_remain = ( mountain > 0);
 		var water_remain = ( water > 0);
+		var plain_remain = ( plain > 0);
+
 
 		var forest_proba = iWeightTable['forest'];
 		var mountain_proba = iWeightTable['mountain'];
 		var water_proba = iWeightTable['water'];
+		var plain_proba = iWeightTable['plain'];
 
 		for ( var i = 1; i < this.rows - 1 ; i++)
 		{
@@ -669,10 +699,16 @@ class WorldCanvas
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
 					mountain--;
 				}
+
 				else if ( (rand_res <= ( forest_proba + mountain_proba + water_proba )) && water_remain )
 				{
 					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
 					water--;
+				}
+				else if ( (rand_res <= ( forest_proba + mountain_proba + water_proba + plain_proba )) && plain_remain )
+				{
+					this.map[i][j] = WORLD_AREAS.findIndex( this.isPlainIndex );
+					plain--;
 				} else {
 					// random res returned no result, so picked terrain not available anymore
 					if (forest_remain)
@@ -690,17 +726,24 @@ class WorldCanvas
 						this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
 						water--;
 					}
+					else if (plain_remain)
+					{
+						this.map[i][j] = WORLD_AREAS.findIndex( this.isPlainIndex );
+						plain--;
+					}
 				}
 
 				forest_remain 	= ( forest > 0);
 				mountain_remain = ( mountain > 0);
 				water_remain 	= ( water > 0);
+				plain_remain = ( plain > 0);
 
 			}//! j col
 		}//! i row
 		iTo_dispatch.n_forest_tiles = forest;
 		iTo_dispatch.n_mountain_tiles = mountain;
 		iTo_dispatch.n_water_tiles = water;
+		iTo_dispatch.n_plain_tiles = plain;
 
 	}//! dispatch
 
@@ -724,12 +767,19 @@ class WorldCanvas
 						break;
 					case WORLD_AREAS.findIndex( this.isMountainIndex ):
 						tile_is_valid = this.validateMountainTile(i, j);
-						oTo_dispatch.n_mountain_tiles++;
+						if (!tile_is_valid)
+							oTo_dispatch.n_mountain_tiles++;
 						break;
 					case WORLD_AREAS.findIndex( this.isWaterIndex ):
 						tile_is_valid = this.validateWaterTile(i, j);
-						oTo_dispatch.n_water_tiles++;
+						if (!tile_is_valid)
+							oTo_dispatch.n_water_tiles++;
 						break;
+					case WORLD_AREAS.findIndex( this.isPlainIndex ):
+							tile_is_valid = this.validatePlainTile(i, j);
+							if (!tile_is_valid)
+								oTo_dispatch.n_plain_tiles++;
+							break;
 					default:
 						break;
 				}
@@ -750,7 +800,8 @@ class WorldCanvas
 		var is_valid = false;
 		// must have a 2-link
 		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 2);
-		
+		is_valid |= this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
+
 		return is_valid;	
 	}
 
@@ -775,6 +826,15 @@ class WorldCanvas
 		is_valid1 = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 1);
 		
 		return is_valid1 && is_valid2 && is_valid3;	
+	}
+
+	validatePlainTile( iRow, iCol)
+	{
+		var is_valid = false;
+		// must have a 2-link
+		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isPlainIndex ), 0);
+		
+		return is_valid;	
 	}
 
 
@@ -927,7 +987,7 @@ class WorldCanvas
 				color = 'orangered';
 				break;
 			case WORLD_AREAS.findIndex(this.isForestIndex):
-				color = 'palegreen';
+				color = 'ForestGreen';
 				break;
 			case WORLD_AREAS.findIndex(this.isMountainIndex):
 				color = 'rosybrown';
@@ -937,6 +997,9 @@ class WorldCanvas
 				break;
 			case WORLD_AREAS.findIndex(this.isWaterIndex):
 				color = 'paleturquoise';
+				break;
+			case WORLD_AREAS.findIndex(this.isPlainIndex):
+				color='palegreen';
 				break;
 			default:
 				color = 'white';
