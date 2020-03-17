@@ -580,11 +580,77 @@ class WorldCanvas
 				break;
 		}
 
+		this.fillMapHoles();
+
 		// 4 generate life
 
 
 		// 5 insert base in da middle
 		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+	}
+
+	fillMapHoles()
+	{
+		for ( var i = 1; i < this.rows - 1 ; i++)
+		{
+			for ( var j = 1; j < this.columns - 1; j++)
+			{
+				if  (this.map[i][j] != 0 )
+					continue;
+				var nearby_tiles = [
+					this.map[i-1][j],
+					this.map[i+1][j],
+					this.map[i][j-1],
+					this.map[i][j+1],
+				];
+				var n_forest=0, n_mountain=0, n_water=0;
+				nearby_tiles.forEach( e => {
+					if ( e == WORLD_AREAS.findIndex(this.isForestIndex))
+						n_forest++;
+					else if ( e == WORLD_AREAS.findIndex(this.isMountainIndex))
+						n_mountain++;
+					else if ( e == WORLD_AREAS.findIndex(this.isWaterIndex))
+						n_water++;
+				});
+
+				var n_types = {};
+				n_types["f"] = n_forest;
+				n_types["m"] = n_mountain;
+				n_types["w"] = n_water;
+
+				var to_array = [];
+				for (var key in n_types) {
+				to_array.push({
+					name: key,
+					value: n_types[key]
+				});
+				}
+
+				var sorted = to_array.sort(
+					function(lval, rval) {
+						(lval.value < rval.value ) ?  1 : ((rval.value > lval.value) ? -1 : 0);
+					}
+				);
+				
+				var selected_to_fill = sorted[0].key;
+				switch(selected_to_fill)
+				{
+					case "f":
+						this.map[i][j] = WORLD_AREAS.findIndex(this.isForestIndex);
+						break;
+					case "m":
+						this.map[i][j] = WORLD_AREAS.findIndex(this.isMountainIndex);
+						break;
+					case "w":
+						this.map[i][j] = WORLD_AREAS.findIndex(this.isWaterIndex);
+						break;
+					default:
+						break;
+				}
+				
+			}
+		}
+
 	}
 
 	dispatchOnMap( iTo_dispatch, iWeightTable )
