@@ -604,6 +604,7 @@ class WorldCanvas
 
 	placeCities()
 	{
+		/*
 		for ( var i = 1; i < this.rows - 1 ; i++)
 		{
 			for ( var j = 1; j < this.columns - 1; j++)
@@ -611,8 +612,52 @@ class WorldCanvas
 				// PLACE CITIES..
 			}//! j col
 		}//! i col
+*/
+
+		var cities = 	[	new City("abidjan", this.placeHarborCity), 
+										new City("cykaistan", this.placeMountainCity) 
+									];
+		var cities_left_to_place = 0;
+		while( cities_left_to_place > 0)
+		{
+			// pick rand tile
+			var i_row = Math.random();
+			var j_col = Math.random();
+			if ( (i_row == 0) || (j_col == 0) )
+				continue;
+			if ( (i_row == this.rows) || (j_col == this.columns) )
+				continue;
+
+			//try place every city left
+			cities.forEach( 
+				function(e) {
+					var city_placed = e.tryPlaceCity( i_row, j_col);
+					if (city_placed)
+					{ cities.splice( cities.indexOf(e) ); break; }
+				});
+			if (cities.length <= 0)
+				break; // all cities places
+		}//! while
 
 	}//! placecities
+
+	placeHarborCity( iRow, iCol)
+	{
+		var is_valid = false;
+		// must have a 2-link
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 4);
+
+		return is_valid;	
+	}
+
+	placeMountainCity( iRow, iCol)
+	{
+		var is_valid = false;
+		// must have a 2-link
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 5);
+
+		return is_valid;	
+	}
 
 	fillMapHoles()
 	{
@@ -1107,11 +1152,26 @@ class LocalArea
 /// CITY
 class City 
 {
-	constructor(name, coord_row, coord_col)
+
+
+	constructor(name, placementCallback)
 	{
 		this.name = name;
-		this.coord_row = coord_row;
-		this.coord_col = coord_col;
+		this.placement_cond = placementCallback;
+
+		this.coord_row = -1;
+		this.coord_col = -1;
+	}
+
+	tryPlaceCity( iRow, iCol)
+	{
+		if ( this.placement_cond( iRow, iCol) )
+		{
+			this.coord_col = iCol;
+			this.coord_row = iRow;
+			return true;
+		}
+		return false;
 	}
 
 }
