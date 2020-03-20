@@ -614,10 +614,10 @@ class WorldCanvas
 
 	placeCities()
 	{
-		this.placed_cities = [];
+		var local_placed_cities = [];
 		var cities = 	[	new City("abidjan", this.placeHarborCity.bind(this)), 
-										new City("cykaistan", this.placeMountainCity.bind(this)) 
-									];
+							new City("cykaistan", this.placeMountainCity.bind(this)) 
+						];
 									
 		var cities_left_to_place = cities.length;
 		while( cities_left_to_place > 0)
@@ -632,14 +632,19 @@ class WorldCanvas
 
 			//try place every city left
 			cities.forEach( 
-				function(e) {
+				function(e) 
+				{
 					var city_placed = e.tryPlaceCity( i_row, j_col);
 					if (city_placed)
-					{ this.placed_cities.push(e); cities.splice( cities.indexOf(e) ); }
-				}).bind(this);
-			if (cities.length <= 0)
-				break; // all cities places
+					{ 
+						local_placed_cities.push(e); 
+						cities.splice( cities.indexOf(e), 1 ); 
+					}
+				});
+				cities_left_to_place = cities.length;
 		}//! while
+
+		this.placed_cities = local_placed_cities;
 
 	}//! placecities
 
