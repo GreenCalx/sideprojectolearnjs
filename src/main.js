@@ -415,6 +415,16 @@ class WorldCanvas
 		this.columns = n_columns;
 		this.cell_size_w = (this.pxl_width / this.columns);
 		this.cell_size_h = (this.pxl_height / this.rows);
+		// TileType indexes
+		this.none_t_type 					= WORLD_AREAS.findIndex(this.isNoneIndex);
+		this.undiscovered_t_type 	= WORLD_AREAS.findIndex(this.isUndiscoveredIndex);
+		this.base_t_type 					= WORLD_AREAS.findIndex(this.isBaseIndex);
+		this.water_t_type 				= WORLD_AREAS.findIndex(this.isWaterIndex);
+		this.plain_t_type 				= WORLD_AREAS.findIndex(this.isPlainIndex);
+		this.forest_t_type 				= WORLD_AREAS.findIndex(this.isForestIndex);
+		this.mountain_t_type 			= WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.road_t_type 					= WORLD_AREAS.findIndex(this.isRoadIndex);
+
 
 		// init world
 		this.initMatrix();
@@ -604,25 +614,17 @@ class WorldCanvas
 
 	placeCities()
 	{
-		/*
-		for ( var i = 1; i < this.rows - 1 ; i++)
-		{
-			for ( var j = 1; j < this.columns - 1; j++)
-			{
-				// PLACE CITIES..
-			}//! j col
-		}//! i col
-*/
-
-		var cities = 	[	new City("abidjan", this.placeHarborCity), 
-										new City("cykaistan", this.placeMountainCity) 
+		this.placed_cities = [];
+		var cities = 	[	new City("abidjan", this.placeHarborCity.bind(this)), 
+										new City("cykaistan", this.placeMountainCity.bind(this)) 
 									];
-		var cities_left_to_place = 0;
+									
+		var cities_left_to_place = cities.length;
 		while( cities_left_to_place > 0)
 		{
 			// pick rand tile
-			var i_row = Math.random();
-			var j_col = Math.random();
+			var i_row = Math.floor( (Math.random() * (this.rows-1)) );
+			var j_col = Math.floor( (Math.random() * (this.columns-1)) );
 			if ( (i_row == 0) || (j_col == 0) )
 				continue;
 			if ( (i_row == this.rows) || (j_col == this.columns) )
@@ -633,8 +635,8 @@ class WorldCanvas
 				function(e) {
 					var city_placed = e.tryPlaceCity( i_row, j_col);
 					if (city_placed)
-					{ cities.splice( cities.indexOf(e) ); break; }
-				});
+					{ this.placed_cities.push(e); cities.splice( cities.indexOf(e) ); }
+				}).bind(this);
 			if (cities.length <= 0)
 				break; // all cities places
 		}//! while
@@ -645,7 +647,7 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirect8TileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 4);
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.water_t_type, 4);
 
 		return is_valid;	
 	}
@@ -654,7 +656,7 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirect8TileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 5);
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.mountain_t_type, 5);
 
 		return is_valid;	
 	}
@@ -931,40 +933,41 @@ class WorldCanvas
 		validateDirect8TileLinks( iRow, iCol, tileType, n_links)
 		{
 			var links = 0;
-	
+		
 			if ((iRow > 0) && (iCol > 0))
 			{
-				var arete_a_tileType = this.map[iRow-1][iCol];
-				var arete_b_tileType = this.map[iRow+1][iCol];
-				var arete_c_tileType = this.map[iRow][iCol-1];
-				var arete_d_tileType = this.map[iRow][iCol+1];
-
-				var arete_e_tileType = this.map[iRow-1][iCol-1];
-				var arete_f_tileType = this.map[iRow+1][iCol+1];
-				var arete_g_tileType = this.map[iRow+1][iCol-1];
-				var arete_h_tileType = this.map[iRow-1][iCol+1];
-
-				if ( arete_a_tileType == tileType )
-					links++;
-				if ( arete_b_tileType == tileType )
-					links++;
-				if ( arete_c_tileType == tileType )
-					links++;
-				if ( arete_d_tileType == tileType )
-					links++;
-				
-				if ( arete_e_tileType == tileType )
-					links++;
-				if ( arete_f_tileType == tileType )
-					links++;
-				if ( arete_g_tileType == tileType )
-					links++;
-				if ( arete_h_tileType == tileType )
-					links++;
+					var arete_a_tileType = this.map[iRow-1][iCol];
+					var arete_b_tileType = this.map[iRow+1][iCol];
+					var arete_c_tileType = this.map[iRow][iCol-1];
+					var arete_d_tileType = this.map[iRow][iCol+1];
+	
+					var arete_e_tileType = this.map[iRow-1][iCol-1];
+					var arete_f_tileType = this.map[iRow+1][iCol+1];
+					var arete_g_tileType = this.map[iRow+1][iCol-1];
+					var arete_h_tileType = this.map[iRow-1][iCol+1];
+	
+					if ( arete_a_tileType == tileType )
+						links++;
+					if ( arete_b_tileType == tileType )
+						links++;
+					if ( arete_c_tileType == tileType )
+						links++;
+					if ( arete_d_tileType == tileType )
+						links++;
+					
+					if ( arete_e_tileType == tileType )
+						links++;
+					if ( arete_f_tileType == tileType )
+						links++;
+					if ( arete_g_tileType == tileType )
+						links++;
+					if ( arete_h_tileType == tileType )
+						links++;
 			}
-			
+				
 			return ( links >= n_links );
 		}
+
 
 	init()
 	{
@@ -1174,8 +1177,8 @@ class City
 		return false;
 	}
 
+	
 }
-
 
 // -------------------------------------------
 /// UI BUTTONS
