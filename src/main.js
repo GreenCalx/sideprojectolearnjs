@@ -385,8 +385,14 @@ const WORLD_AREAS = [
 	'plain'
 ];
 
+const POI = [
+	'none',
+	'city'
+]
+
 class WorldCanvas
 {
+	// map terrains
 	isNoneIndex = (element) => element == 'none';
 	isUndiscoveredIndex = (element) => element == 'undiscovered';
 	isBaseIndex = (element) => element == 'base';
@@ -396,6 +402,9 @@ class WorldCanvas
 	isWaterIndex = (element) => element == 'water';
 	isPlainIndex = (element) => element == 'plain';
 
+	// map POIs
+	isNonePOIIndex = (element) => element == 'none';
+	isCityPOIIndex = (element) => element == 'city';
 
 	WorldCanvas()
 	{
@@ -410,6 +419,7 @@ class WorldCanvas
 		this.columns = n_columns;
 		this.cell_size_w = (this.pxl_width / this.columns);
 		this.cell_size_h = (this.pxl_height / this.rows);
+
 		// TileType indexes
 		this.none_t_type 			= WORLD_AREAS.findIndex(this.isNoneIndex);
 		this.undiscovered_t_type 	= WORLD_AREAS.findIndex(this.isUndiscoveredIndex);
@@ -420,6 +430,9 @@ class WorldCanvas
 		this.mountain_t_type 		= WORLD_AREAS.findIndex(this.isMountainIndex);
 		this.road_t_type 			= WORLD_AREAS.findIndex(this.isRoadIndex);
 
+		// POI indexes
+		this.none_poi_type = POI.findIndex( this.isNonePOIIndex );
+		this.city_poi_type = POI.findIndex( this.isCityPOIIndex );
 
 		// init world
 		this.initMatrix();
@@ -513,7 +526,8 @@ class WorldCanvas
 	initMatrix()
 	{
 		var default_value = 0;
-		this.map = [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
+		this.map 		= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
+		this.poi_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
 	}
 
 	initLocalAreas()
@@ -533,7 +547,7 @@ class WorldCanvas
 
 	initWorld()
 	{
-		// 1 Borders are water
+		/// 1 Borders are water
 		var water = this.water_t_type;
 		this.map[0].fill(water);
 		this.map[this.rows-1].fill(water);
@@ -543,7 +557,7 @@ class WorldCanvas
 			this.map[i][this.columns-1] = water;
 		}
 
-		// 2 generate weight table for terrain
+		/// 2 generate weight table for terrain
 		// > total is 100
 		var weight_table = {};
 		//var terrains = this.getTerrainAreas();
@@ -553,7 +567,7 @@ class WorldCanvas
 		weight_table['water'] = 25;
 		weight_table['plain'] = 40;
 
-		// 3 generate terrain
+		/// 3 generate terrain
 		var remaining_tiles = ((this.rows - 2) * (this.columns - 2)) - 1; // minus water border and base
 		var to_dispatch = {
 			n_water_tiles  	:  0, 
@@ -599,12 +613,18 @@ class WorldCanvas
 		if (!map_is_valid)
 			this.fillMapHoles();
 
-		// 4 generate life
+		/// 4 generate life
+		this.initPOIMap();
+
+
+		/// 5 insert base in da middle
+		this.map[10][10] = this.base_t_type;//'base'
+	}
+
+	initPOIMap()
+	{
 		this.placeCities();
 
-
-		// 5 insert base in da middle
-		this.map[10][10] = this.base_t_type;//'base'
 	}
 
 	placeCities()
@@ -635,13 +655,19 @@ class WorldCanvas
 					if (city_placed)
 					{ 
 						local_placed_cities.push(e); 
-						cities.splice( cities.indexOf(e), 1 ); 
+						cities.splice( cities.indexOf(e), 1 );
 					}
 				});
 				cities_left_to_place = cities.length;
 		}//! while
 
 		this.placed_cities = local_placed_cities;
+		for (var i=0; i < this.placed_cities.length; i++)
+		{
+			var row = this.placed_cities[i].coord_row;
+			var col = this.placed_cities[i].coord_col;
+			this.poi_map[i_row][j_col] = this.city_poi_type;
+		}
 
 	}//! placecities
 
