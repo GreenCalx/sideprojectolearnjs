@@ -246,8 +246,6 @@ class PlayerBase {
 			}
 		}
 	
-	
-
 } //! Base
 
 /// PLAYER
@@ -363,9 +361,6 @@ class Player {
 		document.getElementById("cost_sacrifice").innerHTML= 1;
 
 	}
-
-
-	
 }// !Player
 
 
@@ -416,14 +411,14 @@ class WorldCanvas
 		this.cell_size_w = (this.pxl_width / this.columns);
 		this.cell_size_h = (this.pxl_height / this.rows);
 		// TileType indexes
-		this.none_t_type 					= WORLD_AREAS.findIndex(this.isNoneIndex);
+		this.none_t_type 			= WORLD_AREAS.findIndex(this.isNoneIndex);
 		this.undiscovered_t_type 	= WORLD_AREAS.findIndex(this.isUndiscoveredIndex);
-		this.base_t_type 					= WORLD_AREAS.findIndex(this.isBaseIndex);
-		this.water_t_type 				= WORLD_AREAS.findIndex(this.isWaterIndex);
-		this.plain_t_type 				= WORLD_AREAS.findIndex(this.isPlainIndex);
-		this.forest_t_type 				= WORLD_AREAS.findIndex(this.isForestIndex);
-		this.mountain_t_type 			= WORLD_AREAS.findIndex(this.isMountainIndex);
-		this.road_t_type 					= WORLD_AREAS.findIndex(this.isRoadIndex);
+		this.base_t_type 			= WORLD_AREAS.findIndex(this.isBaseIndex);
+		this.water_t_type 			= WORLD_AREAS.findIndex(this.isWaterIndex);
+		this.plain_t_type 			= WORLD_AREAS.findIndex(this.isPlainIndex);
+		this.forest_t_type 			= WORLD_AREAS.findIndex(this.isForestIndex);
+		this.mountain_t_type 		= WORLD_AREAS.findIndex(this.isMountainIndex);
+		this.road_t_type 			= WORLD_AREAS.findIndex(this.isRoadIndex);
 
 
 		// init world
@@ -539,7 +534,7 @@ class WorldCanvas
 	initWorld()
 	{
 		// 1 Borders are water
-		var water = WORLD_AREAS.findIndex(this.isWaterIndex);
+		var water = this.water_t_type;
 		this.map[0].fill(water);
 		this.map[this.rows-1].fill(water);
 		for (var i=0; i < this.rows; i++)
@@ -609,14 +604,16 @@ class WorldCanvas
 
 
 		// 5 insert base in da middle
-		this.map[10][10] = WORLD_AREAS.findIndex(this.isBaseIndex);//'base'
+		this.map[10][10] = this.base_t_type;//'base'
 	}
 
 	placeCities()
 	{
 		var local_placed_cities = [];
 		var cities = 	[	new City("abidjan", this.placeHarborCity.bind(this)), 
-							new City("cykaistan", this.placeMountainCity.bind(this)) 
+							new City("cykaistan", this.placeMountainCity.bind(this)),
+							new City("woodywoodo", this.placeWoodCity.bind(this)),
+							new City("da_boring_city", this.placePlainCity.bind(this))
 						];
 									
 		var cities_left_to_place = cities.length;
@@ -650,21 +647,45 @@ class WorldCanvas
 
 	placeHarborCity( iRow, iCol)
 	{
-		var is_valid = false;
+		var is_valid = false, is_valid2=2;
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.water_t_type, 4);
+		is_valid2 = this.map[iRow][iCol] == this.plain_t_type ;
 
-		return is_valid;	
+		return is_valid && is_valid2;	
 	}
 
 	placeMountainCity( iRow, iCol)
 	{
-		var is_valid = false;
+		var is_valid = false, is_valid2 = false;
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.mountain_t_type, 5);
+		is_valid2 = this.map[iRow][iCol] == this.mountain_t_type ;
 
-		return is_valid;	
+		return is_valid && is_valid2;	
 	}
+
+	placeWoodCity( iRow, iCol)
+	{
+		var is_valid = false, is_valid2 = false;
+		// must have a 2-link
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.forest_t_type, 4);
+		is_valid2 = this.map[iRow][iCol] == this.forest_t_type ;
+
+		return is_valid && is_valid2;	
+	}
+
+	placePlainCity( iRow, iCol)
+	{
+		var is_valid = false, is_valid2 = false, is_valid3 = false;
+		// must have a 2-link
+		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.plain_t_type, 8);
+		is_valid2 = this.map[iRow][iCol] == this.plain_t_type ;
+		is_valid3 = !this.validateDirect8TileLinks( iRow, iCol, this.water_t_type, 1);
+
+		return is_valid && is_valid2 && is_valid3;	
+	}
+	
 
 	fillMapHoles()
 	{
@@ -760,44 +781,44 @@ class WorldCanvas
 				var rand_res = Math.random() * 100;
 				if ( (rand_res < forest_proba) && forest_remain )
 				{
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+					this.map[i][j] = this.forest_t_type;
 					forest--;
 				}
 				else if ( (rand_res < ( forest_proba + mountain_proba )) && mountain_remain )
 				{
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+					this.map[i][j] = this.mountain_t_type;
 					mountain--;
 				}
 
 				else if ( (rand_res <= ( forest_proba + mountain_proba + water_proba )) && water_remain )
 				{
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+					this.map[i][j] = this.water_t_type;
 					water--;
 				}
 				else if ( (rand_res <= ( forest_proba + mountain_proba + water_proba + plain_proba )) && plain_remain )
 				{
-					this.map[i][j] = WORLD_AREAS.findIndex( this.isPlainIndex );
+					this.map[i][j] = this.plain_t_type;
 					plain--;
 				} else {
 					// random res returned no result, so picked terrain not available anymore
 					if (forest_remain)
 					{
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isForestIndex );
+						this.map[i][j] = this.forest_t_type;
 						forest--;
 					}
 					else if (mountain_remain)
 					{
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isMountainIndex );
+						this.map[i][j] = this.mountain_t_type;
 						mountain--;
 					}
 					else if (water_remain)
 					{
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isWaterIndex );
+						this.map[i][j] = this.water_t_type;
 						water--;
 					}
 					else if (plain_remain)
 					{
-						this.map[i][j] = WORLD_AREAS.findIndex( this.isPlainIndex );
+						this.map[i][j] = this.plain_t_type;
 						plain--;
 					}
 				}
@@ -818,7 +839,6 @@ class WorldCanvas
 
 	checkMapRules(oTo_dispatch)
 	{
-		// Todo... output in oto_dispatch
 		var mapIsValid = true;
 
 		for ( var i = 1; i < this.rows - 1 ; i++)
@@ -829,22 +849,22 @@ class WorldCanvas
 				var tile_is_valid = true;
 				switch( tile_type )
 				{
-					case WORLD_AREAS.findIndex( this.isForestIndex ):
+					case this.forest_t_type:
 						tile_is_valid = this.validateForestTile(i, j);
 						if (!tile_is_valid)
 							oTo_dispatch.n_forest_tiles++;
 						break;
-					case WORLD_AREAS.findIndex( this.isMountainIndex ):
+					case this.mountain_t_type:
 						tile_is_valid = this.validateMountainTile(i, j);
 						if (!tile_is_valid)
 							oTo_dispatch.n_mountain_tiles++;
 						break;
-					case WORLD_AREAS.findIndex( this.isWaterIndex ):
+					case this.water_t_type:
 						tile_is_valid = this.validateWaterTile(i, j);
 						if (!tile_is_valid)
 							oTo_dispatch.n_water_tiles++;
 						break;
-					case WORLD_AREAS.findIndex( this.isPlainIndex ):
+					case this.plain_t_type:
 							tile_is_valid = this.validatePlainTile(i, j);
 							if (!tile_is_valid)
 								oTo_dispatch.n_plain_tiles++;
@@ -868,10 +888,10 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 2);
-		is_valid |= this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
-		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 1);
-		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 4);
+		is_valid = this.validateDirectTileLinks( iRow, iCol, this.forest_t_type, 2);
+		is_valid |= this.validateDirectTileLinks( iRow, iCol, this.mountain_t_type, 1);
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, this.water_t_type, 1);
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, this.mountain_t_type, 4);
 		return is_valid;	
 	}
 
@@ -879,7 +899,7 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
+		is_valid = this.validateDirectTileLinks( iRow, iCol, this.mountain_t_type, 1);
 
 		return is_valid;	
 	}
@@ -893,7 +913,7 @@ class WorldCanvas
 		is_valid3 = (iCol >= 13) || (iCol<=7);
 
 		// must have a 2-link
-		is_valid1 = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isWaterIndex ), 2);
+		is_valid1 = this.validateDirectTileLinks( iRow, iCol, this.water_t_type, 2);
 		
 		return is_valid1 && is_valid2 && is_valid3;	
 	}
@@ -902,9 +922,9 @@ class WorldCanvas
 	{
 		var is_valid = false;
 		// must have a 2-link
-		is_valid = this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isPlainIndex ), 2);
-		is_valid |= this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isForestIndex ), 1);
-		is_valid &= !this.validateDirectTileLinks( iRow, iCol, WORLD_AREAS.findIndex( this.isMountainIndex ), 1);
+		is_valid = this.validateDirectTileLinks( iRow, iCol, this.plain_t_type, 2);
+		is_valid |= this.validateDirectTileLinks( iRow, iCol, this.forest_t_type, 1);
+		is_valid &= !this.validateDirectTileLinks( iRow, iCol, this.mountain_t_type, 1);
 		return is_valid;	
 	}
 
@@ -997,7 +1017,9 @@ class WorldCanvas
 		this.ctx_2d.scale(1, 1);
 
 		this.drawWorld();
-		if ( this.selected_zone_index != this.isNoneIndex )
+		this.drawCities( this.cell_size_w, this.cell_size_h, this.ctx_2d );
+
+		if ( this.selected_zone_index != this.none_t_type )
 			this.drawSelectedBaseCursor( this.selected_zone.y, this.selected_zone.x);
 
 		this.refreshUI();
@@ -1065,12 +1087,6 @@ class WorldCanvas
 
 	drawLine( x_orig, y_orig, x_end, y_end)
 	{
-		/*
-		this.ctx_2d.beginPath();
-		this.ctx_2d.moveTo( x_orig, y_orig);
-		this.ctx_2d.lineTo( x_end, y_end);
-		this.ctx_2d.stroke();
-		*/
 		this.drawLine( x_orig, y_orig, x_end, y_end, '#000000', 1);
 	}
 
@@ -1095,22 +1111,22 @@ class WorldCanvas
 		var color = 'white';
 		switch(tile_type)
 		{
-			case WORLD_AREAS.findIndex(this.isBaseIndex):
+			case this.base_t_type:
 				color = 'orangered';
 				break;
-			case WORLD_AREAS.findIndex(this.isForestIndex):
+			case this.forest_t_type:
 				color = 'ForestGreen';
 				break;
-			case WORLD_AREAS.findIndex(this.isMountainIndex):
+			case this.mountain_t_type:
 				color = 'rosybrown';
 				break;
-			case WORLD_AREAS.findIndex(this.isRoadIndex):
+			case this.road_t_type:
 				color = 'sandybrown';
 				break;
-			case WORLD_AREAS.findIndex(this.isWaterIndex):
+			case this.water_t_type:
 				color = 'paleturquoise';
 				break;
-			case WORLD_AREAS.findIndex(this.isPlainIndex):
+			case this.plain_t_type:
 				color='palegreen';
 				break;
 			default:
@@ -1124,6 +1140,34 @@ class WorldCanvas
 	{
 		this.ctx_2d.fillStyle = this.getTileColor(tile_type);
 		this.ctx_2d.fillRect( x_orig, y_orig, x_end, y_end);
+	}
+
+	drawCities( cellW, cellH, i2Dctx)
+	{
+		
+		this.placed_cities.forEach
+		(
+			function(e)
+			{
+				var sizeOffset = 5;
+
+				var x_orig 	= e.coord_col * cellW ;
+				var x_end 	= (e.coord_col+1) * cellW;
+
+				var y_orig 	= e.coord_row * cellH;
+				var y_end 	= (e.coord_row+1) * cellH;	
+
+				x_orig 	+= sizeOffset;
+				x_end 	-= sizeOffset
+				y_orig	+= sizeOffset;
+				y_end	-= sizeOffset;
+
+				i2Dctx.fillStyle = e.color;
+				i2Dctx.fillRect( x_orig , y_orig , 
+								 x_end - x_orig , y_end - y_orig);
+
+			}
+		);
 	}
 
 
@@ -1169,6 +1213,8 @@ class City
 
 		this.coord_row = -1;
 		this.coord_col = -1;
+
+		this.color = '#ffcc00';
 	}
 
 	tryPlaceCity( iRow, iCol)
