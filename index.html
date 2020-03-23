@@ -62,50 +62,66 @@
 			</table>
 	</div>
 
+		<!-- ACTION PANEL  -->
 
-	<!-- BASE COMMANDS  -->
-	<p> <b>┌ BASE COMMANDS ┐</b></p>
-	<div id ="base_commands_div">
-		<table>
-			<tr>
-				<th><button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button></th>
-				<th><button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Expand housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button></th>
-				<th><button onClick="sacrificeSlave(1)" style="display:none" id="buy_sacrifice_upgrade_btn"> Sacrifice <span style="color:blue" id="cost_sacrifice"> 0 </span> slave </button></th>
-			</tr>
-			
-		</table>
+		<div id="action_panel_div">
 
-		<!-- JOBS -->
-		<table>
-			<!-- MINE --> 
-			<tr>
-				<th><b>MINE : </b></th>
-				<th><button onClick="assignToMine(1)" style="display:none" id="assign_to_mine_btn"> Assign <span style="color:purple" id="n_pop_assign_mine">1</span> slave </button></th>
-				<th><button onClick="deassignFromMine(1)" style="display:none" id="deassign_from_mine_btn"> De-assign <span style="color:purple" id="n_pop_deassign_mine">1</span> slave  </button></th>
-			</tr>
-			<!-- FARM --> 
-			<tr>
-					<th><b>FARM : </b></th>
-					<th><button onClick="assignToFarm(1)" style="display:none" id="assign_to_farm_btn"> Assign <span style="color:purple" id="n_pop_assign_farm">1</span> slave  </button></th>
-					<th><button onClick="deassignFromFarm(1)" style="display:none" id="deassign_from_farm_btn"> De-assign <span style="color:purple" id="n_pop_deassign_farm">1</span> slave </button></th>
-			</tr>
-		</table>
-	</div>
+		<div id ="city_commands_div" style="display: none;">
+			<p><b>CITY OF <span style="color:blue" id="city_name_actionpanel"></span></b></p>
+			<table>
+				<tr>
+					<th><button onClick="tradeWithSelectedCity">Trade</button></th>
+					<th><button onClick="diplomacyWithSelectedCity">Diplomacy</button></th>
+				</tr>
+			</table>
+		</div>
 
-	<table>
-		<tr>
-			<th style="padding: 5px; text-align: left;">Idle</th>
-			<th><span style="color:black; text-align: left;" id="idle_pop_label"></span></th>
-		</tr>
-		<tr>
-			<th style="padding: 5px; text-align: left;">Miners</th>
-			<th><span style="color:brown; text-align: left;" id="miners_pop_label"></span></th>
-		</tr>
-		<tr>
-			<th style="padding: 5px; text-align: left;">Farmers</th>
-			<th><span style="color:rgb(99, 205, 50); text-align: left;" id="farmers_pop_label"></span></th>
-		</tr>
-	</table>
+		<!-- BASE COMMANDS  -->
+		<div id ="base_commands_div">
+			<p> <b>┌ BASE COMMANDS ┐</b></p>
+			<table>
+				<tr>
+					<th><button onClick="buyCairnUpgrade(1)" style="display:none" id="cairn_upgrade_button"> Craft a cairn for <span style="color:blue" id="cost_cairn"> 0 </span> rocks </button></th>
+					<th><button onClick="buyHousing(1)" style="display:none" id="buy_housing_upgrade_btn"> Expand housing for <span style="color:blue" id="cost_buy_housing"> 0 </span> rocks </button></th>
+					<th><button onClick="sacrificeSlave(1)" style="display:none" id="buy_sacrifice_upgrade_btn"> Sacrifice <span style="color:blue" id="cost_sacrifice"> 0 </span> slave </button></th>
+				</tr>
+				
+			</table>
+
+			<!-- JOBS -->
+			<table>
+				<!-- MINE --> 
+				<tr>
+					<th><b>MINE : </b></th>
+					<th><button onClick="assignToMine(1)" style="display:none" id="assign_to_mine_btn"> Assign <span style="color:purple" id="n_pop_assign_mine">1</span> slave </button></th>
+					<th><button onClick="deassignFromMine(1)" style="display:none" id="deassign_from_mine_btn"> De-assign <span style="color:purple" id="n_pop_deassign_mine">1</span> slave  </button></th>
+				</tr>
+				<!-- FARM --> 
+				<tr>
+						<th><b>FARM : </b></th>
+						<th><button onClick="assignToFarm(1)" style="display:none" id="assign_to_farm_btn"> Assign <span style="color:purple" id="n_pop_assign_farm">1</span> slave  </button></th>
+						<th><button onClick="deassignFromFarm(1)" style="display:none" id="deassign_from_farm_btn"> De-assign <span style="color:purple" id="n_pop_deassign_farm">1</span> slave </button></th>
+				</tr>
+			</table>
+
+			<table>
+				<tr>
+					<th style="padding: 5px; text-align: left;">Idle</th>
+					<th><span style="color:black; text-align: left;" id="idle_pop_label"></span></th>
+				</tr>
+				<tr>
+					<th style="padding: 5px; text-align: left;">Miners</th>
+					<th><span style="color:brown; text-align: left;" id="miners_pop_label"></span></th>
+				</tr>
+				<tr>
+					<th style="padding: 5px; text-align: left;">Farmers</th>
+					<th><span style="color:rgb(99, 205, 50); text-align: left;" id="farmers_pop_label"></span></th>
+				</tr>
+			</table>
+		</div> 	<!-- !BASE COMMANDS  -->
+
+	</div> <!-- ACTION PANEL  -->
+
 
 
 	<style type="text/css">

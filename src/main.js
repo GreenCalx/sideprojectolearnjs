@@ -74,7 +74,7 @@ class PlayerBase {
 		if (this.champion.name == "tom")
 		this.attractivity = 0;
 
-		this.world = new WorldCanvas(20, 20);
+		//this.world = new WorldCanvas(20, 20);
 	}
 
 	// MUTATORS
@@ -387,6 +387,7 @@ const WORLD_AREAS = [
 
 const POI = [
 	'none',
+	'base',
 	'city'
 ]
 
@@ -404,6 +405,7 @@ class WorldCanvas
 
 	// map POIs
 	isNonePOIIndex = (element) => element == 'none';
+	isBasePOIIndex = (element) => element == 'base';
 	isCityPOIIndex = (element) => element == 'city';
 
 	WorldCanvas()
@@ -433,13 +435,16 @@ class WorldCanvas
 		// POI indexes
 		this.none_poi_type = POI.findIndex( this.isNonePOIIndex );
 		this.city_poi_type = POI.findIndex( this.isCityPOIIndex );
+		this.base_poi_type = POI.findIndex( this.isBasePOIIndex );
+
 
 		// init world
 		this.initMatrix();
 		this.initWorld();
 
-		this.selected_zone_index = 0;
-		this.selected_zone = { x: 0, y: 0 };
+		this.selected_zone_index = this.base_t_type;
+		this.selected_zone = { x: 10, y: 10 }; // BASE
+		this.poi_map[10][10] = this.base_poi_type;
 
 		this.initLocalAreas();
 		this.loadLocalArea();
@@ -451,12 +456,21 @@ class WorldCanvas
 		
 		// Init user mouse control
 		this.canvas.addEventListener(
-			'mousedown', function(event) {
+			'click', function(event) {
 				var pos = getMousePos( __player.world.canvas, event);
 				__player.world.selectZone( pos.x, pos.y);
 			}, false
 		);
-
+/*
+		this.canvas.addEventListener(
+			'mouseup', function(event) {
+					// Nothing
+					// this 'unbind' is necessary otherwise it calls the mousedown eventlistener
+					// which causes multiple call to selectZone which leads to bugs
+					// if the html changes (esp. actionpanel)
+			}, false
+		);
+*/
 	}
 
 	selectZone(pos_x, pos_y)
@@ -492,6 +506,8 @@ class WorldCanvas
 
 		this.loadLocalArea();
 
+		this.updateActionPanel( row_index, col_index);
+
 	}
 
 	drawSelectedBaseCursor( iRowIndex, iColIndex)
@@ -523,10 +539,22 @@ class WorldCanvas
 		this.selected_local_area = this.local_areas[this.selected_zone.y][this.selected_zone.x];
 	}
 
+	updateActionPanel( iPOIRow, iPOICol)
+	{
+		var base_action_div = document.getElementById("base_commands_div");
+		var city_action_div = document.getElementById("city_commands_div");
+
+		var poi_type = this.poi_map[iPOIRow][iPOICol];
+		base_action_div.style.display = ( (poi_type == this.base_poi_type) ? 'block' : 'none');
+		city_action_div.style.display = ( (poi_type == this.city_poi_type) ? 'block' : 'none');
+	}
+
 	initMatrix()
 	{
-		var default_value = 0;
+		var default_value = this.none_t_type;
 		this.map 		= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
+		
+		default_value = this.none_poi_type;
 		this.poi_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
 	}
 
