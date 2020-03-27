@@ -551,11 +551,26 @@ class WorldCanvas
 
 	initMatrix()
 	{
+		// LAYER 0 TERRAIN
 		var default_value = this.none_t_type;
 		this.map 		= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
 		
+		// LAYER 1 POI
 		default_value = this.none_poi_type;
 		this.poi_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_value));
+
+		// LAYER 2 PLAYER TROOPS
+		var default_troop = null;
+		this.p_troops_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_troop));
+
+		// LAYER 3 ENEMY TROOPS
+		default_troop = null;
+		this.e_troops_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_troop));
+
+		// LAYER 4 DISCOVERY
+		var default_discovery = true;
+		this.discovery_map 	= [...Array(this.rows)].map(e => Array(this.columns).fill(default_discovery));
+		
 	}
 
 	initLocalAreas()
@@ -694,7 +709,7 @@ class WorldCanvas
 		{
 			var row = this.placed_cities[i].coord_row;
 			var col = this.placed_cities[i].coord_col;
-			this.poi_map[i_row][j_col] = this.city_poi_type;
+			this.poi_map[row][col] = this.city_poi_type;
 		}
 
 	}//! placecities
