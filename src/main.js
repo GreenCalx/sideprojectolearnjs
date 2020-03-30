@@ -39,6 +39,20 @@ class Champion
     }
 }
 
+class Troops
+{
+	constructor()
+	{
+		this.warriors 	= 0;
+		this.archers 	= 0;
+
+		this.archer_char = '∂';
+		this.warriors_whar = 'ѱ';
+	}
+
+
+}
+
 
 /// PLAYER BASE
 // Resources, Production
@@ -539,6 +553,13 @@ class WorldCanvas
 		this.selected_local_area = this.local_areas[this.selected_zone.y][this.selected_zone.x];
 	}
 
+	findCityByCoordinates( iRow, iCol)
+	{
+		var city;
+		this.placed_cities.forEach( e => city = ((e.coord_col==iCol) && (e.coord_row==iRow)) ? e : city );
+		return city;
+	}
+
 	updateActionPanel( iPOIRow, iPOICol)
 	{
 		var base_action_div = document.getElementById("base_commands_div");
@@ -554,7 +575,9 @@ class WorldCanvas
 
 		if (isCity)
 		{
-			//document.getElementById("city_name_actionpanel").innerHTML = ;
+			var city = this.findCityByCoordinates( iPOIRow, iPOICol);
+			if (!!city)
+				document.getElementById("city_name_actionpanel").innerHTML = city.name.toUpperCase();
 		}
 
 	}
@@ -688,7 +711,6 @@ class WorldCanvas
 							new City("woodywoodo", this.placeWoodCity.bind(this)),
 							new City("da_boring_city", this.placePlainCity.bind(this))
 						];
-									
 		var cities_left_to_place = cities.length;
 		while( cities_left_to_place > 0)
 		{
@@ -1276,8 +1298,25 @@ class LocalArea
 		this.seed = iRNGSeed;
 		this.area_type = iAreaType;
 
+		this.deployed_player_troops = null;
+		this.deployed_enemy_troops = null;
+
 		this.init();
 
+	}
+
+	playerDeployTroops( iTroops )
+	{
+		if (!this.deployed_player_troops)
+			this.deployed_player_troops = new Troops();
+		this.deployed_player_troops.addTroops(iTroops);
+	}
+
+	enemyDeployTroops( iTroops )
+	{
+		if (!this.deployed_enemy_troops)
+			this.deployed_player_troops = new Troops();
+		this.deployed_enemy_troops.addTroops(iTroops);
 	}
 
 	init()
@@ -1306,6 +1345,7 @@ class cPOI
 /// CITY
 class City extends cPOI
 {
+
 	constructor(name, placementCallback)
 	{
 		super(name);
@@ -1315,6 +1355,9 @@ class City extends cPOI
 		this.coord_col = -1;
 
 		this.color = '#ffcc00';
+
+		this.reput_to_player  = 50;
+		this.stones = 5000;
 	}
 
 	tryPlaceCity( iRow, iCol)
