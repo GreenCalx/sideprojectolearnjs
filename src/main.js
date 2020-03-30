@@ -545,8 +545,18 @@ class WorldCanvas
 		var city_action_div = document.getElementById("city_commands_div");
 
 		var poi_type = this.poi_map[iPOIRow][iPOICol];
-		base_action_div.style.display = ( (poi_type == this.base_poi_type) ? 'block' : 'none');
-		city_action_div.style.display = ( (poi_type == this.city_poi_type) ? 'block' : 'none');
+		var isBase = (poi_type == this.base_poi_type);
+		var isCity = (poi_type == this.city_poi_type);
+
+		// update divs
+		base_action_div.style.display = ( isBase ? 'block' : 'none');
+		city_action_div.style.display = ( isCity ? 'block' : 'none');
+
+		if (isCity)
+		{
+			//document.getElementById("city_name_actionpanel").innerHTML = ;
+		}
+
 	}
 
 	initMatrix()
@@ -716,43 +726,57 @@ class WorldCanvas
 
 	placeHarborCity( iRow, iCol)
 	{
-		var is_valid = false, is_valid2=2;
+		var is_valid = false, is_valid2 = false, is_far_from_base = false;
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.water_t_type, 4);
 		is_valid2 = this.map[iRow][iCol] == this.plain_t_type ;
+		is_far_from_base = !(	(this.map[iRow][iCol] == this.base_t_type) ||
+								this.validateDirect8TileLinks( iRow, iCol, this.base_t_type, 1)
+							);
 
-		return is_valid && is_valid2;	
+		return is_valid && is_valid2 && is_far_from_base;	
 	}
 
 	placeMountainCity( iRow, iCol)
 	{
-		var is_valid = false, is_valid2 = false;
+		var is_valid = false, is_valid2 = false, is_far_from_base = false;
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.mountain_t_type, 5);
 		is_valid2 = this.map[iRow][iCol] == this.mountain_t_type ;
+		is_far_from_base = !(	(this.map[iRow][iCol] == this.base_t_type) ||
+			this.validateDirect8TileLinks( iRow, iCol, this.base_t_type, 1)
+		);
 
-		return is_valid && is_valid2;	
+
+		return is_valid && is_valid2 && is_far_from_base;	
 	}
 
 	placeWoodCity( iRow, iCol)
 	{
-		var is_valid = false, is_valid2 = false;
+		var is_valid = false, is_valid2 = false, is_far_from_base = false;
+
+		is_far_from_base = !(	(this.map[iRow][iCol] == this.base_t_type) ||
+			this.validateDirect8TileLinks( iRow, iCol, this.base_t_type, 1)
+		);
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.forest_t_type, 4);
 		is_valid2 = this.map[iRow][iCol] == this.forest_t_type ;
 
-		return is_valid && is_valid2;	
+		return is_valid && is_valid2 && is_far_from_base;	
 	}
 
 	placePlainCity( iRow, iCol)
 	{
-		var is_valid = false, is_valid2 = false, is_valid3 = false;
+		var is_valid = false, is_valid2 = false, is_valid3 = false, is_far_from_base = false;
 		// must have a 2-link
 		is_valid = this.validateDirect8TileLinks( iRow, iCol, this.plain_t_type, 8);
 		is_valid2 = this.map[iRow][iCol] == this.plain_t_type ;
 		is_valid3 = !this.validateDirect8TileLinks( iRow, iCol, this.water_t_type, 1);
+		is_far_from_base = !(	(this.map[iRow][iCol] == this.base_t_type) ||
+			this.validateDirect8TileLinks( iRow, iCol, this.base_t_type, 1)
+		);
 
-		return is_valid && is_valid2 && is_valid3;	
+		return is_valid && is_valid2 && is_valid3 && is_far_from_base;	
 	}
 	
 
@@ -1270,14 +1294,21 @@ class LocalArea
 }//! LocalArea
 
 // -------------------------------------------
-/// CITY
-class City 
+/// POI
+
+class cPOI 
 {
+	constructor(name)
+	{ this.name = name; }
+}
 
-
+// -------------------------------------------
+/// CITY
+class City extends cPOI
+{
 	constructor(name, placementCallback)
 	{
-		this.name = name;
+		super(name);
 		this.placement_cond = placementCallback;
 
 		this.coord_row = -1;
