@@ -577,7 +577,21 @@ class WorldCanvas
 		{
 			var city = this.findCityByCoordinates( iPOIRow, iPOICol);
 			if (!!city)
+			{
 				document.getElementById("city_name_actionpanel").innerHTML = city.name.toUpperCase();
+				document.getElementById("reput_bar").style.backgroundColor = "#e1e1ea";
+
+				var load_bar = document.getElementById("load_bar");
+				load_bar.style.backgroundColor  = 
+					(city.reput_to_player < 25) ?  "#ff0000" : 
+					(city.reput_to_player < 50) ?  "#ff8000" :
+					(city.reput_to_player < city.max_reput) ?  '#4dff4d' :
+					"#ffff4d"
+					;
+				load_bar.innerHTML = city.reput_to_player;
+				load_bar.style.width = city.reput_to_player + "%";
+			}
+			
 		}
 
 	}
@@ -1345,7 +1359,6 @@ class cPOI
 /// CITY
 class City extends cPOI
 {
-
 	constructor(name, placementCallback)
 	{
 		super(name);
@@ -1357,6 +1370,7 @@ class City extends cPOI
 		this.color = '#ffcc00';
 
 		this.reput_to_player  = 50;
+		this.max_reput=100;
 		this.stones = 5000;
 	}
 
@@ -1371,7 +1385,6 @@ class City extends cPOI
 		return false;
 	}
 
-	
 }
 
 // -------------------------------------------
