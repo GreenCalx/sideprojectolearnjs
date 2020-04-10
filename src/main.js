@@ -590,6 +590,8 @@ class WorldCanvas
 					;
 				load_bar.innerHTML = city.reput_to_player;
 				load_bar.style.width = city.reput_to_player + "%";
+
+				document.getElementById("city_money_lbl").innerHTML = city.money;
 			}
 			
 		}
@@ -1371,7 +1373,7 @@ class City extends cPOI
 
 		this.reput_to_player  = 50;
 		this.max_reput=100;
-		this.stones = 5000;
+		this.money = 5000;
 	}
 
 	tryPlaceCity( iRow, iCol)
